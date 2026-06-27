@@ -64,6 +64,15 @@ struct AIConfig: Sendable {
         return OpenAIClient(apiKey: key, model: config.model, timeout: config.timeoutSeconds)
     }
 
+    /// Select the pose-suggestion provider. Same Mock ↔ Real swap point as `makeBackend`:
+    /// AI ranking only when a real key exists, otherwise the offline `MockPoseSuggestionProvider`.
+    static func makePoseSuggestionProvider(config: AIConfig = .load()) -> any PoseSuggestionProviding {
+        guard !config.useMockAI, let key = config.apiKey else {
+            return MockPoseSuggestionProvider()
+        }
+        return OpenAIPoseSuggestionProvider(apiKey: key, model: config.model, timeout: config.timeoutSeconds)
+    }
+
     private static func numeric(_ value: Any?) -> TimeInterval? {
         if let d = value as? Double { return d }
         if let i = value as? Int { return TimeInterval(i) }

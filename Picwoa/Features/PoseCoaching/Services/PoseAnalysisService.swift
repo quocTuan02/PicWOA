@@ -29,7 +29,7 @@ struct PoseAnalysisResult: Sendable {
     }
 }
 
-struct PoseAnalysisService {
+struct PoseAnalysisService: Sendable {
 
     func analyze(_ pose: PoseObservation) -> PoseAnalysisResult? {
         guard let left = pose.leftShoulder, let right = pose.rightShoulder else { return nil }

@@ -3,16 +3,25 @@ import SwiftUI
 struct CameraScreen: View {
     @State private var viewModel: CameraViewModel
     @State private var overlayViewModel: OverlayViewModel
+    @State private var poseSuggestionViewModel: PoseSuggestionViewModel
     @State private var capturedImage: UIImage?
     @State private var coachingResponse: AICoachingResponse?
     @State private var showReview = false
+    @State private var isRequestingAI = false
+
+    /// Fired when the user taps the AI button — wired to `AppCoordinator.requestAICoaching()`.
+    private let onRequestAICoaching: () async -> Void
 
     init(
         viewModel: CameraViewModel = CameraViewModel(),
-        overlayViewModel: OverlayViewModel = OverlayViewModel()
+        overlayViewModel: OverlayViewModel = OverlayViewModel(),
+        poseSuggestionViewModel: PoseSuggestionViewModel = PoseSuggestionViewModel(),
+        onRequestAICoaching: @escaping () async -> Void = {}
     ) {
         _viewModel = State(initialValue: viewModel)
         _overlayViewModel = State(initialValue: overlayViewModel)
+        _poseSuggestionViewModel = State(initialValue: poseSuggestionViewModel)
+        self.onRequestAICoaching = onRequestAICoaching
     }
 
     var body: some View {
@@ -28,13 +37,25 @@ struct CameraScreen: View {
             // Coaching overlay
             CoachingOverlay(viewModel: overlayViewModel)
 
+            // Pose suggestion — top-left reference dáng that fits the scene
+            VStack {
+                HStack {
+                    PoseSuggestionCard(viewModel: poseSuggestionViewModel)
+                    Spacer()
+                }
+                Spacer()
+            }
+            .padding(Spacing.m)
+
             // Bottom toolbar
             VStack {
                 Spacer()
                 BottomToolbar(
                     isCapturing: viewModel.isCapturing,
                     isReadyToCapture: overlayViewModel.isReadyToCapture,
-                    onCapture: handleCapture
+                    isRequestingAI: isRequestingAI,
+                    onCapture: handleCapture,
+                    onRequestAI: handleRequestAI
                 )
             }
         }
@@ -65,6 +86,15 @@ struct CameraScreen: View {
             }
         } message: {
             Text(viewModel.errorMessage ?? "")
+        }
+    }
+
+    private func handleRequestAI() {
+        guard !isRequestingAI else { return }
+        Task {
+            isRequestingAI = true
+            await onRequestAICoaching()
+            isRequestingAI = false
         }
     }
 

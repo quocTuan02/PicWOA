@@ -9,8 +9,10 @@ final class AppCoordinator {
     let sceneClassifier: SceneClassifierService
     let orchestrator: AIOrchestrator
     let overlayViewModel: OverlayViewModel
+    let poseSuggestionViewModel: PoseSuggestionViewModel
     let cameraViewModel: CameraViewModel
 
+    private let poseAnalysis = PoseAnalysisService()
     private let sceneStore = SceneContextStore()
     private var tasks: [Task<Void, Never>] = []
     private var hasStarted = false
@@ -21,7 +23,8 @@ final class AppCoordinator {
         ruleEngine: RuleEngine = RuleEngine(),
         sceneClassifier: SceneClassifierService = SceneClassifierService(),
         // Honor Config.plist: real OpenAI when a key is set, otherwise safe MockAIClient.
-        aiBackend: any AIBackendProtocol = AIConfig.makeBackend()
+        aiBackend: any AIBackendProtocol = AIConfig.makeBackend(),
+        poseSuggestionProvider: (any PoseSuggestionProviding)? = nil
     ) {
         self.cameraEngine = cameraEngine
         self.visionEngine = visionEngine
@@ -29,6 +32,7 @@ final class AppCoordinator {
         self.sceneClassifier = sceneClassifier
         self.orchestrator = AIOrchestrator(backend: aiBackend, ruleEngine: ruleEngine)
         self.overlayViewModel = OverlayViewModel()
+        self.poseSuggestionViewModel = PoseSuggestionViewModel(provider: poseSuggestionProvider)
         self.cameraViewModel = CameraViewModel(
             cameraEngine: cameraEngine,
             captureService: CaptureService(cameraEngine: cameraEngine)
@@ -53,12 +57,21 @@ final class AppCoordinator {
             }
         })
 
-        tasks.append(Task { [visionEngine, orchestrator, sceneStore, overlayViewModel] in
+        tasks.append(Task { [visionEngine, orchestrator, sceneStore, overlayViewModel, poseSuggestionViewModel, poseAnalysis] in
             for await pose in visionEngine.poseStream {
                 await MainActor.run { overlayViewModel.updatePose(pose) }
-                guard let pose else { continue }
                 let scene = await sceneStore.current()
-                await orchestrator.process(pose: pose, scene: scene)
+                // Suggest a dáng that fits the scene + where the subject sits in the frame.
+                // Runs even without a pose (center default) so the card guides the user in.
+                let framePosition = pose.flatMap { poseAnalysis.analyze($0)?.framePosition } ?? "center"
+                await MainActor.run {
+                    poseSuggestionViewModel.update(scene: scene, framePosition: framePosition)
+                }
+                // Realtime path is OFFLINE — RuleEngine only, no network. The AI runs solely
+                // when the user taps the AI button (see `requestAICoaching()`).
+                await MainActor.run {
+                    orchestrator.updateRuleOnly(pose: pose, scene: scene)
+                }
             }
         })
 
@@ -77,6 +90,12 @@ final class AppCoordinator {
                 }
             }
         })
+    }
+
+    /// Trigger one AI coaching call for the current pose — invoked by the AI button in the UI.
+    /// Awaits the round-trip so the caller can drive a loading indicator.
+    func requestAICoaching() async {
+        await orchestrator.requestAICoaching()
     }
 
     func stop() {

@@ -18,6 +18,8 @@ final class AIOrchestrator: AICoachingProvider {
     private var cachedResponse: AICoachingResponse?
     private var cachedAt: Date = .distantPast
     private var previousResult: RuleEngineResult?
+    // Latest realtime RuleEngine snapshot — what `requestAICoaching()` (button) acts on.
+    private var latestResult: RuleEngineResult?
 
     // Observability (debug)
     private(set) var lastMetrics: OrchestratorMetrics?
@@ -85,6 +87,40 @@ final class AIOrchestrator: AICoachingProvider {
         cachedAt = .distantPast
         previousResult = nil
         lastRequestTime = .distantPast
+    }
+
+    // MARK: - Button-driven entry (AI only on explicit user request)
+
+    /// Realtime, OFFLINE path — runs only the RuleEngine and emits its coaching every frame.
+    /// NEVER calls the network. Remembers the latest snapshot so `requestAICoaching()` can act
+    /// on the current pose when the user taps the AI button.
+    func updateRuleOnly(pose: PoseObservation?, scene: SceneContext) {
+        let result = ruleEngine.evaluate(pose: pose, scene: scene)
+        latestResult = result
+        latestScene = scene
+        emit(makeFallbackResponse(from: result))
+    }
+
+    /// User-initiated AI coaching for the CURRENT pose. One call per tap — no throttle, no
+    /// polling. Awaits the network round-trip so the UI can show a loading state, then emits
+    /// the AI response (or best-available fallback on error). No-op if the pose is already good.
+    func requestAICoaching() async {
+        guard let result = latestResult else { return }
+        let startedAt = Date()
+
+        // Already good → nothing to coach, don't spend an API call.
+        if result.readyToCapture {
+            emit(makeFallbackResponse(from: result))
+            finish(.ruleEngineClean, since: startedAt, cacheHit: false, issues: result.issues.count)
+            return
+        }
+
+        // Supersede any previous in-flight request, then call once and wait.
+        aiTask?.cancel()
+        aiTask = nil
+        aiInFlight = true
+        let request = OpenAIRequest(from: result, scene: latestScene)
+        await performAICall(request: request, result: result, startedAt: startedAt)
     }
 
     // MARK: - Direct entry (when the orchestrator runs the RuleEngine itself)

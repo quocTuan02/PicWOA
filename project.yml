@@ -25,11 +25,8 @@ targets:
         excludes:
           - "**/*.md"
           - "**/*.template"
-          - "Resources/Config.plist"
-    resources:
-      - path: Picwoa/Resources/Assets.xcassets
-      - path: Picwoa/Resources/Localizable.strings
-      # Settings AI (gitignored) — optional để máy chưa có file vẫn build (AIConfig fallback mock).
+      # Config.plist (gitignored) được tự động bundle khi tồn tại. Nếu máy chưa có file,
+      # xcodegen bỏ qua khi quét và AIConfig fallback sang MockAIClient — build vẫn chạy.
       - path: Picwoa/Resources/Config.plist
         optional: true
     info:
