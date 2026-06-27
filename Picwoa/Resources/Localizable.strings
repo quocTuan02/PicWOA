@@ -1,0 +1,37 @@
+/* Picwoa — tiếng Việt */
+
+/* Camera */
+"camera.permission.title" = "Cho phép truy cập Camera";
+"camera.permission.description" = "Picwoa cần camera để huấn luyện tư thế chụp ảnh cho bạn.";
+
+/* Coaching */
+"coaching.enter_frame" = "Bước vào khung hình";
+"coaching.ready" = "Hoàn hảo! Chụp ngay";
+"coaching.chin_down" = "Ngẩng đầu lên";
+"coaching.left_shoulder_low" = "Nhấc vai trái lên";
+"coaching.right_shoulder_low" = "Nhấc vai phải lên";
+"coaching.torso_facing" = "Xoay người 15° sang phải";
+"coaching.off_center_right" = "Dịch sang phải một chút";
+"coaching.off_center_left" = "Dịch sang trái một chút";
+"coaching.too_far" = "Bước lại gần hơn";
+"coaching.too_close" = "Lùi ra xa hơn";
+
+/* Review */
+"review.title" = "Kết quả";
+"review.save" = "Lưu ảnh";
+"review.retake" = "Chụp lại";
+"review.saved" = "Đã lưu ảnh!";
+"review.score.perfect" = "Hoàn hảo";
+"review.score.great" = "Rất tốt";
+"review.score.good" = "Khá tốt";
+"review.score.improve" = "Cần cải thiện";
+"review.score.retry" = "Thử lại";
+
+/* Before/After */
+"comparison.before" = "Trước";
+"comparison.after" = "Sau";
+
+/* Photos */
+"photos.permission.title" = "Cho phép truy cập Thư viện ảnh";
+"photos.permission.description" = "Picwoa cần lưu ảnh vào thư viện của bạn.";
+"photos.open_settings" = "Mở Cài đặt";

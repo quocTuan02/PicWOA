@@ -1,0 +1,65 @@
+name: Picwoa
+options:
+  bundleIdPrefix: com.picwoa
+  deploymentTarget:
+    iOS: "17.0"
+  defaultConfig: Debug
+  xcodeVersion: "15"
+  swift: "6.0"
+
+settings:
+  base:
+    SWIFT_VERSION: 6.0
+    IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+    ENABLE_STRICT_CONCURRENCY_CHECKING: complete
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+
+targets:
+  Picwoa:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: Picwoa
+        excludes:
+          - "**/*.md"
+          - "**/*.template"
+    resources:
+      - path: Picwoa/Resources/Assets.xcassets
+      - path: Picwoa/Resources/Localizable.strings
+    info:
+      path: Picwoa/Resources/Info.plist
+      properties:
+        CFBundleDisplayName: Picwoa
+        CFBundleName: Picwoa
+        UILaunchStoryboardName: ""
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        NSCameraUsageDescription: "Picwoa cần camera để huấn luyện tư thế chụp ảnh cho bạn."
+        NSPhotoLibraryAddUsageDescription: "Picwoa cần lưu ảnh vào thư viện của bạn."
+        UIApplicationSupportsIndirectInputEvents: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.picwoa.app
+        INFOPLIST_FILE: Picwoa/Resources/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ENABLE_PREVIEWS: YES
+    dependencies:
+      - sdk: AVFoundation.framework
+      - sdk: Vision.framework
+      - sdk: CoreML.framework
+      - sdk: CoreImage.framework
+      - sdk: Photos.framework
+
+  PicwoaTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - PicwoaTests
+    dependencies:
+      - target: Picwoa
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.picwoa.tests
