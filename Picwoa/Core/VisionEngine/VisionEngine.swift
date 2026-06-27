@@ -20,10 +20,13 @@ actor VisionEngine: PoseProvider {
     }
 
     func process(sampleBuffer: CMSampleBuffer) {
-        // TODO: Dev B — implement VNDetectHumanBodyPoseRequest
-        // let request = VNDetectHumanBodyPoseRequest()
-        // let handler = VNImageRequestHandler(cmSampleBuffer: sampleBuffer)
-        // try? handler.perform([request])
-        // parse result → emit PoseObservation
+        let pose = PoseDetector.detect(in: sampleBuffer)
+        _poseContinuation.yield(pose)
+
+        if pose != nil {
+            _personContinuation.yield(true)
+        } else {
+            _personContinuation.yield(PersonDetector.detect(in: sampleBuffer))
+        }
     }
 }

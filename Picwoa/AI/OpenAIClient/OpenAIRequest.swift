@@ -7,11 +7,11 @@ struct OpenAIRequest: Sendable {
     let framePosition: String
     let personCount: Int
 
-    init(from result: RuleEngineResult, scene: SceneContext, framePosition: String = "center") {
+    init(from result: RuleEngineResult, scene: SceneContext, framePosition: String? = nil) {
         self.scene = scene.rawValue
         self.pose = "standing"
         self.issues = result.issues.map { $0.id }
-        self.framePosition = framePosition
+        self.framePosition = framePosition ?? result.framePosition
         self.personCount = 1
     }
 

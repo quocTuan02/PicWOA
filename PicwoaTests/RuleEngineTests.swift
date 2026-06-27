@@ -38,6 +38,7 @@ final class RuleEngineTests: XCTestCase {
         )
         let result = engine.evaluate(pose: pose, scene: .outdoor)
         XCTAssertTrue(result.readyToCapture, "Expected readyToCapture but got issues: \(result.issues.map(\.id))")
+        XCTAssertEqual(result.framePosition, "center")
     }
 
     func testLeftShoulderLowRule() {
@@ -52,6 +53,52 @@ final class RuleEngineTests: XCTestCase {
         )
         let result = engine.evaluate(pose: pose, scene: .outdoor)
         XCTAssertTrue(result.issues.contains { $0.id == "left_shoulder_low" })
+    }
+
+    func testRightShoulderLowRule() {
+        let result = engine.evaluate(
+            pose: PoseAnalysisResult(chinAngle: 0, shoulderDelta: -0.08, torsoWidth: 0.24, frameCenterX: 0.5),
+            scene: .outdoor
+        )
+
+        XCTAssertTrue(result.issues.contains { $0.id == "right_shoulder_low" })
+    }
+
+    func testTorsoFacingCameraRule() {
+        let result = engine.evaluate(
+            pose: PoseAnalysisResult(chinAngle: 0, shoulderDelta: 0, torsoWidth: 0.32, frameCenterX: 0.5),
+            scene: .outdoor
+        )
+
+        XCTAssertTrue(result.issues.contains { $0.id == "torso_facing" })
+    }
+
+    func testBodyOffCenterRule() {
+        let result = engine.evaluate(
+            pose: PoseAnalysisResult(chinAngle: 0, shoulderDelta: 0, torsoWidth: 0.24, frameCenterX: 0.72),
+            scene: .outdoor
+        )
+
+        XCTAssertTrue(result.issues.contains { $0.id == "off_center_left" })
+        XCTAssertEqual(result.framePosition, "right")
+    }
+
+    func testTooFarRule() {
+        let result = engine.evaluate(
+            pose: PoseAnalysisResult(chinAngle: 0, shoulderDelta: 0, torsoWidth: 0.08, frameCenterX: 0.5),
+            scene: .outdoor
+        )
+
+        XCTAssertTrue(result.issues.contains { $0.id == "too_far" })
+    }
+
+    func testTooCloseRule() {
+        let result = engine.evaluate(
+            pose: PoseAnalysisResult(chinAngle: 0, shoulderDelta: 0, torsoWidth: 0.56, frameCenterX: 0.5),
+            scene: .outdoor
+        )
+
+        XCTAssertTrue(result.issues.contains { $0.id == "too_close" })
     }
 
     func testRulesPrioritized() {
@@ -69,5 +116,39 @@ final class RuleEngineTests: XCTestCase {
         // First issue should have lower priority number (higher priority)
         let priorities = result.issues.map(\.priority)
         XCTAssertEqual(priorities, priorities.sorted())
+    }
+}
+
+final class PoseAnalysisServiceTests: XCTestCase {
+
+    func testAnalyzeComputesPoseAnalysisResult() {
+        let pose = PoseObservation(
+            head: CGPoint(x: 0.5, y: 0.54),
+            neck: CGPoint(x: 0.5, y: 0.60),
+            leftShoulder: CGPoint(x: 0.30, y: 0.68),
+            rightShoulder: CGPoint(x: 0.70, y: 0.62),
+            hip: CGPoint(x: 0.5, y: 0.82),
+            leftKnee: nil,
+            rightKnee: nil,
+            leftFoot: nil,
+            rightFoot: nil,
+            confidence: 0.95,
+            timestamp: 1
+        )
+
+        let result = PoseAnalysisService().analyze(pose)
+
+        XCTAssertNotNil(result)
+        XCTAssertEqual(result?.chinAngle ?? 0, -0.06, accuracy: 0.001)
+        XCTAssertEqual(result?.shoulderDelta ?? 0, 0.06, accuracy: 0.001)
+        XCTAssertEqual(result?.torsoWidth ?? 0, 0.40, accuracy: 0.001)
+        XCTAssertEqual(result?.frameCenterX ?? 0, 0.50, accuracy: 0.001)
+        XCTAssertEqual(result?.framePosition, "center")
+    }
+
+    func testAnalyzeReturnsNilWithoutShoulders() {
+        let result = PoseAnalysisService().analyze(.empty)
+
+        XCTAssertNil(result)
     }
 }

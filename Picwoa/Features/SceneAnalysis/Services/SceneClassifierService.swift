@@ -1,9 +1,14 @@
 import AVFoundation
 import CoreImage
+import CoreImage.CIFilterBuiltins
 
-struct SceneClassifierService {
+struct SceneClassifierService: Sendable {
 
-    func classify(_ sampleBuffer: CMSampleBuffer) -> SceneContext {
+    func classify(_ sampleBuffer: CMSampleBuffer) async -> SceneContext {
+        classifySynchronously(sampleBuffer)
+    }
+
+    func classifySynchronously(_ sampleBuffer: CMSampleBuffer) -> SceneContext {
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
             return .unknown
         }
@@ -11,8 +16,8 @@ struct SceneClassifierService {
         let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
         let avgBrightness = averageBrightness(of: ciImage)
 
-        // Heuristic: outdoor scenes tend to be brighter
-        // TODO: Dev B — replace with CoreML classifier for better accuracy
+        // MVP heuristic: outdoor scenes tend to be brighter.
+        // A CoreML classifier can replace this later for better accuracy.
         return avgBrightness > 0.4 ? .outdoor : .indoor
     }
 

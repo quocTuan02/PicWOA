@@ -6,10 +6,12 @@ final class AppCoordinator {
     let cameraEngine: CameraEngine
     let visionEngine: VisionEngine
     let ruleEngine: RuleEngine
+    let sceneClassifier: SceneClassifierService
     let orchestrator: AIOrchestrator
     let overlayViewModel: OverlayViewModel
     let cameraViewModel: CameraViewModel
 
+    private let sceneStore = SceneContextStore()
     private var tasks: [Task<Void, Never>] = []
     private var hasStarted = false
 
@@ -17,11 +19,13 @@ final class AppCoordinator {
         cameraEngine: CameraEngine = .shared,
         visionEngine: VisionEngine = .shared,
         ruleEngine: RuleEngine = RuleEngine(),
+        sceneClassifier: SceneClassifierService = SceneClassifierService(),
         aiBackend: any AIBackendProtocol = MockAIClient()
     ) {
         self.cameraEngine = cameraEngine
         self.visionEngine = visionEngine
         self.ruleEngine = ruleEngine
+        self.sceneClassifier = sceneClassifier
         self.orchestrator = AIOrchestrator(backend: aiBackend, ruleEngine: ruleEngine)
         self.overlayViewModel = OverlayViewModel()
         self.cameraViewModel = CameraViewModel(
@@ -34,16 +38,25 @@ final class AppCoordinator {
         guard !hasStarted else { return }
         hasStarted = true
 
-        tasks.append(Task { [cameraEngine, visionEngine] in
+        tasks.append(Task { [cameraEngine, visionEngine, sceneClassifier, sceneStore] in
+            var lastSceneClassification = Date.distantPast
+
             for await buffer in cameraEngine.makeSampleBufferStream() {
                 await visionEngine.process(sampleBuffer: buffer)
+
+                let now = Date()
+                guard now.timeIntervalSince(lastSceneClassification) >= 5 else { continue }
+                lastSceneClassification = now
+
+                let scene = await sceneClassifier.classify(buffer)
+                await sceneStore.update(scene)
             }
         })
 
-        tasks.append(Task { [visionEngine, orchestrator] in
+        tasks.append(Task { [visionEngine, orchestrator, sceneStore] in
             for await pose in visionEngine.poseStream {
-                guard let pose else { continue }
-                await orchestrator.process(pose: pose, scene: .outdoor)
+                let scene = await sceneStore.current()
+                await orchestrator.process(pose: pose, scene: scene)
             }
         })
 
@@ -69,5 +82,17 @@ final class AppCoordinator {
         tasks.removeAll()
         hasStarted = false
         cameraEngine.stopSession()
+    }
+}
+
+private actor SceneContextStore {
+    private var scene: SceneContext = .unknown
+
+    func update(_ scene: SceneContext) {
+        self.scene = scene
+    }
+
+    func current() -> SceneContext {
+        scene
     }
 }

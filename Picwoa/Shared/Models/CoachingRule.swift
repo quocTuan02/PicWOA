@@ -16,6 +16,13 @@ struct CoachingRule: Identifiable, Sendable {
 struct RuleEngineResult: Sendable {
     let issues: [CoachingRule]
     let readyToCapture: Bool
+    let framePosition: String
+
+    init(issues: [CoachingRule], readyToCapture: Bool, framePosition: String = "center") {
+        self.issues = issues
+        self.readyToCapture = readyToCapture
+        self.framePosition = framePosition
+    }
 
     static let empty = RuleEngineResult(issues: [], readyToCapture: false)
 }

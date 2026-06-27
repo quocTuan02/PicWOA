@@ -6,6 +6,27 @@ struct PoseAnalysisResult: Sendable {
     let shoulderDelta: Float      // left.y - right.y, positive = left lower
     let torsoWidth: Float         // shoulder width normalized 0..1
     let frameCenterX: Float       // person center X in frame 0..1
+    let framePosition: String     // left, center, or right
+
+    init(
+        chinAngle: Float,
+        shoulderDelta: Float,
+        torsoWidth: Float,
+        frameCenterX: Float,
+        framePosition: String? = nil
+    ) {
+        self.chinAngle = chinAngle
+        self.shoulderDelta = shoulderDelta
+        self.torsoWidth = torsoWidth
+        self.frameCenterX = frameCenterX
+        self.framePosition = framePosition ?? Self.positionLabel(for: frameCenterX)
+    }
+
+    private static func positionLabel(for centerX: Float) -> String {
+        if centerX < 0.35 { return "left" }
+        if centerX > 0.65 { return "right" }
+        return "center"
+    }
 }
 
 struct PoseAnalysisService {
