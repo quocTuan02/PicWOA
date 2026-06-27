@@ -1,6 +1,6 @@
 import Foundation
 
-struct PoseRule {
+struct PoseRule: @unchecked Sendable {
     let id: String
     let evaluate: (PoseObservation, SceneContext) -> CoachingRule?
 }

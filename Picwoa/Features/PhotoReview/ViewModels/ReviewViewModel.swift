@@ -25,7 +25,7 @@ final class ReviewViewModel {
     func save() async {
         let imageToSave = editedImage ?? originalImage
         do {
-            try await PHPhotoLibrary.shared().performChanges {
+            try await PHPhotoLibrary.shared().performChanges { @Sendable in
                 PHAssetChangeRequest.creationRequestForAsset(from: imageToSave)
             }
             showSaveSuccess = true

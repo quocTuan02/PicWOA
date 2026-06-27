@@ -7,20 +7,34 @@ final class CameraViewModel {
 
     var permissionStatus: CameraPermissionStatus = .notDetermined
     var isCapturing: Bool = false
+    var errorMessage: String?
 
-    private let cameraEngine = CameraEngine.shared
-    private let permissionManager = CameraPermissionManager()
+    private let cameraEngine: CameraEngine
+    private let permissionManager: CameraPermissionManager
+    private let captureService: CaptureService
+    let previewLayer: AVCaptureVideoPreviewLayer
 
-    var previewLayer: AVCaptureVideoPreviewLayer {
-        // TODO: Dev A — return layer from CameraEngine
-        AVCaptureVideoPreviewLayer()
+    init(
+        cameraEngine: CameraEngine = .shared,
+        permissionManager: CameraPermissionManager = CameraPermissionManager(),
+        captureService: CaptureService = CaptureService()
+    ) {
+        self.cameraEngine = cameraEngine
+        self.permissionManager = permissionManager
+        self.captureService = captureService
+        self.previewLayer = cameraEngine.makePreviewLayer()
     }
 
     func onAppear() async {
         await permissionManager.request()
         permissionStatus = permissionManager.status
         if permissionStatus == .granted {
-            try? await cameraEngine.startSession()
+            do {
+                try await cameraEngine.startSession()
+                errorMessage = nil
+            } catch {
+                errorMessage = "Không thể khởi động camera. Vui lòng thử lại."
+            }
         }
     }
 
@@ -28,7 +42,15 @@ final class CameraViewModel {
         guard !isCapturing else { return nil }
         isCapturing = true
         defer { isCapturing = false }
-        return try? await cameraEngine.capturePhoto()
+
+        do {
+            let image = try await captureService.capture()
+            errorMessage = nil
+            return image
+        } catch {
+            errorMessage = "Không thể chụp ảnh. Vui lòng thử lại."
+            return nil
+        }
     }
 
     func openSettings() {

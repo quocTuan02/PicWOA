@@ -10,27 +10,23 @@ final class AIOrchestrator: AICoachingProvider {
     private var lastRequestTime: Date = .distantPast
     private var cachedResponse: AICoachingResponse?
 
-    private var coachingContinuation: AsyncStream<AICoachingResponse>.Continuation?
-
-    private(set) lazy var coachingStream: AsyncStream<AICoachingResponse> = {
-        AsyncStream { [weak self] continuation in
-            self?.coachingContinuation = continuation
-        }
-    }()
+    private let coachingContinuation: AsyncStream<AICoachingResponse>.Continuation
+    nonisolated let coachingStream: AsyncStream<AICoachingResponse>
 
     init(backend: any AIBackendProtocol = MockAIClient(), ruleEngine: RuleEngine = RuleEngine()) {
         self.backend = backend
         self.ruleEngine = ruleEngine
+        let (stream, continuation) = AsyncStream<AICoachingResponse>.makeStream()
+        coachingStream = stream
+        coachingContinuation = continuation
     }
 
     func process(pose: PoseObservation, scene: SceneContext) async {
         let result = ruleEngine.evaluate(pose: pose, scene: scene)
 
-        // Emit Rule Engine result immediately (offline, no latency)
         let fallbackResponse = makeFallbackResponse(from: result)
         emit(fallbackResponse)
 
-        // Throttle AI calls
         guard Date().timeIntervalSince(lastRequestTime) >= throttleInterval else { return }
         guard !result.issues.isEmpty else { return }
 
@@ -47,7 +43,7 @@ final class AIOrchestrator: AICoachingProvider {
     }
 
     private func emit(_ response: AICoachingResponse) {
-        coachingContinuation?.yield(response)
+        coachingContinuation.yield(response)
     }
 
     private func makeFallbackResponse(from result: RuleEngineResult) -> AICoachingResponse {
