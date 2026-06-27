@@ -52,7 +52,7 @@
 
 | | |
 |-|-|
-| **Owned Features** | PromptBuilder, OpenAIClient, AIOrchestrator, LiveOverlay, PhotoEditing, PhotoReview |
+| **Owned Features** | PromptBuilder, OpenAIClient, AIOrchestrator, LiveOverlay, PhotoEditing, PostCaptureResult |
 | **Estimated Workload** | 125 phút code + 30 phút integration |
 | **Critical Path** | MockAIClient phải xong trước 01:00 để test pipeline mà không cần real API |
 | **Dependencies** | Cần shared models từ Dev A (00:25). Cần `RuleEngineResult` contract từ Dev B (không cần implementation) |
@@ -61,10 +61,11 @@
 **Definition of Done:**
 - `MockAIClient` return valid `AICoachingResponse` bằng tiếng Việt
 - `CoachingCard` hiển thị trên camera screen
-- `ReviewScreen` có score + before/after + save
+- `CoachingCard` hiển thị "Hoàn hảo! Chụp ngay" khi `readyToCapture = true`
+- `ResultScreen` có edited image + save/retake
 - `CoreImageProcessor` apply visible change
 
-**Chiến thuật:** Build theo thứ tự `MockAI → Overlay → CoreImage → Review`. Không build real OpenAI trước khi Overlay chạy được.
+**Chiến thuật:** Build theo thứ tự `MockAI → Overlay → ReadyCue → CoreImage → Result`. Không build real OpenAI trước khi Overlay chạy được.
 
 ---
 
@@ -87,7 +88,7 @@
 | LiveOverlay UI | **Cursor** | SwiftUI animation + ZStack overlay | Visual check |
 | PhotoCapture | **Codex** | Thin wrapper | Capture returns image |
 | CoreImageProcessor | **Codex** | Filter chain công thức rõ ràng | Visible output diff |
-| PhotoReview UI | **Cursor** | Layout + BeforeAfter component | Visual check |
+| PostCaptureResult UI | **Cursor** | Layout edited image + save/retake | Visual check |
 | AppCoordinator | **Claude Code** | DI wiring, navigation, Swift 6 — dễ sai | **Required** — full build |
 
 **Hướng dẫn dùng AI:**
@@ -221,7 +222,7 @@ CameraExperience (Dev A, 01:25)     RuleEngine (Dev B, 02:00)
 |-------|---------|--------|
 | **Dev A** | `PhotoCapture` wrapper → sketch `AppCoordinator` skeleton → sẵn sàng integration | Capture returns UIImage |
 | **Dev B** | Hoàn thành `RuleEngine` (8 rules + unit tests) → `SceneAnalysis` → commit | RuleEngineResult pass all unit tests |
-| **Dev C** | `AIOrchestrator` (throttle + fallback) → `LiveOverlay` (CoachingCard + Arrow) → `ReviewScreen` | Overlay visible với mock data |
+| **Dev C** | `AIOrchestrator` (throttle + fallback) → `LiveOverlay` (CoachingCard + Arrow + ReadyCue) → `ResultScreen` | Overlay visible với mock data |
 
 **Sync lúc 02:00:** Review interface contracts — Dev C báo Dev B "em cần `RuleEngineResult` stream format này" → confirm không mismatch.
 
@@ -233,7 +234,7 @@ CameraExperience (Dev A, 01:25)     RuleEngine (Dev B, 02:00)
 |-------|---------|
 | **Dev A** | Merge `feature/dev-b-vision` và `feature/dev-c-ai` vào `main` → resolve conflicts (nếu có) → wire `AppCoordinator` |
 | **Dev B** | Hỗ trợ Dev A resolve conflicts phần Vision → test VisionEngine với camera thật trong integrated build |
-| **Dev C** | Test LiveOverlay với real camera feed → test ReviewScreen với real capture → swap MockAI → real OpenAI nếu có API key |
+| **Dev C** | Test LiveOverlay với real camera feed → test ResultScreen với real capture → swap MockAI → real OpenAI nếu có API key |
 
 **Hard rule:** Nếu lúc 02:30 một module chưa xong → merge phần đã xong, dùng mock cho phần còn thiếu. Demo không được chờ.
 
@@ -314,9 +315,9 @@ Chạy checklist này trước mỗi merge vào `main`:
 | OpenAIClient | HTTP + mock | ✓ | Mock returns data | Orchestrator uses | Response in <1s |
 | AIOrchestrator | Throttle + fallback | ✓ | Throttle test | Overlay subscribed | No duplicate calls |
 | LiveOverlay | Card + arrow | ✓ | Visual | On CameraScreen | Updates real-time |
-| PhotoCapture | UIImage returned | ✓ | Capture test | Review receives | No lag |
-| PhotoEditing | CIFilter chain | ✓ | Pixel diff test | Review uses | Visible change |
-| PhotoReview | Score + B/A + save | ✓ | Visual | Navigation back | Photo in Photos |
+| PhotoCapture | UIImage returned | ✓ | Capture test | Result receives | No lag |
+| PhotoEditing | CIFilter chain | ✓ | Pixel diff test | Result uses | Visible change |
+| PostCaptureResult | Edited image + save | ✓ | Visual | Navigation back | Photo in Photos |
 | AppCoordinator | DI + navigation | ✓ | Full flow test | All features wired | End-to-end clean |
 
 ---
@@ -381,12 +382,10 @@ Architecture question → Tech Lead quyết định ngay, không debate
 - [ ] Cue thay đổi khi thay đổi tư thế
 - [ ] "Hoàn hảo! Chụp ngay" khi tư thế chuẩn
 
-### Capture & Review
+### Capture & Result
 - [ ] Capture button tap → không lag
-- [ ] Review screen xuất hiện ≤ 1 giây
-- [ ] Score hiển thị (★★★★☆)
-- [ ] Feedback text tiếng Việt
-- [ ] Before/After visible và khác nhau
+- [ ] Result screen xuất hiện ≤ 1 giây
+- [ ] Edited image hiển thị rõ
 - [ ] "Lưu ảnh" → ảnh trong Photos app
 - [ ] "Chụp lại" → về camera, không crash
 

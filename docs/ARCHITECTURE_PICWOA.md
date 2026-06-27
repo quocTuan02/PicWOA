@@ -54,7 +54,7 @@ Picwoa/
 │   ├── SceneAnalysis/          ← Dev B
 │   ├── LiveOverlay/            ← Dev C
 │   ├── PhotoCapture/           ← Dev A
-│   ├── PhotoReview/            ← Dev C
+│   ├── PhotoReview/            ← Dev C (PostCaptureResult in product language)
 │   └── PhotoEditing/           ← Dev C
 ├── Core/
 │   ├── CameraEngine/
@@ -84,7 +84,7 @@ Picwoa/
 - Feature coordinators
 
 ### Domain Layer
-- Entities: `PoseObservation`, `CoachingResult`, `EditingRecipe`, `PhotoScore`
+- Entities: `PoseObservation`, `CoachingResult`, `EditingRecipe`, `CaptureReadiness`
 - Business Rules (pure Swift, no framework dependencies)
 - Rule Engine (deterministic logic)
 
@@ -170,15 +170,12 @@ Picwoa/
 │   │   └── Services/
 │   │       └── CaptureService.swift
 │   │
-│   ├── PhotoReview/
+│   ├── PhotoReview/  (PostCaptureResult)
 │   │   ├── Views/
-│   │   │   ├── ReviewScreen.swift
-│   │   │   ├── ScoreView.swift
-│   │   │   └── BeforeAfterView.swift
+│   │   │   ├── ResultScreen.swift
+│   │   │   └── BeforeAfterView.swift  (stretch)
 │   │   ├── ViewModels/
-│   │   │   └── ReviewViewModel.swift
-│   │   └── Models/
-│   │       └── PhotoScore.swift
+│   │   │   └── ResultViewModel.swift
 │   │
 │   └── PhotoEditing/
 │       ├── ViewModels/
@@ -276,7 +273,7 @@ Picwoa/
 | SceneAnalysis | VisionEngine, CoreML |
 | LiveOverlay | PoseCoaching, AI/AIOrchestrator |
 | PhotoCapture | CameraEngine |
-| PhotoReview | AI/AIOrchestrator, PhotoEditing |
+| PhotoReview / PostCaptureResult | AI/AIOrchestrator, PhotoEditing |
 | PhotoEditing | Core/CoreImageProcessor |
 
 Features KHÔNG import lẫn nhau trực tiếp — giao tiếp qua shared models trong Domain.
@@ -392,14 +389,12 @@ CaptureViewModel.capture()
 UIImage (full resolution)
     │
     ▼
-ReviewViewModel.init(image: UIImage, coaching: AICoachingResponse)
-    │
-    ├──► DisplayOriginal ──► BeforeAfterView
+ResultViewModel.init(image: UIImage, coaching: AICoachingResponse)
     │
     └──► CoreImageProcessor.apply(recipe)
               │
               ▼
-         UIImage (edited) ──► BeforeAfterView
+         UIImage (edited) ──► ResultScreen
 ```
 
 ### Flow 3 — Save Flow
@@ -463,7 +458,7 @@ PhotoSaver.save(editedImage)
                        └───────┬───────┘         │
                                │                 │
                        ┌───────▼───────┐         │
-                       │   Reviewing   │         │
+                       │    Result     │         │
                        └───┬───────┬───┘         │
                            │       │             │
                       ┌────▼──┐  ┌─▼──────┐     │
@@ -481,7 +476,7 @@ PhotoSaver.save(editedImage)
 | `coaching` | Có gợi ý cần điều chỉnh | CoachingCard active |
 | `readyToCapture` | Tư thế đạt chuẩn | "Hoàn hảo! Chụp ngay" + pulse |
 | `capturing` | Đang chụp | Flash effect |
-| `reviewing` | Đang xem kết quả | ReviewScreen modal |
+| `result` | Đang xem kết quả | ResultScreen modal |
 
 ---
 

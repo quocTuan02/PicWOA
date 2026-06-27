@@ -14,9 +14,9 @@ Picwoa is an AI-powered photography assistant that provides real-time guidance t
 
 The MVP focuses on one complete user journey:
 
-> Open Camera → AI Suggests Pose → Capture → AI Reviews → Auto Enhance → Save
+> Open Camera → Live AI Coaching → Ready-to-Capture Cue → Capture → Auto Enhance → Save
 
-Instead of trying to build many features, the MVP should excel at this single experience.
+Instead of trying to build many features, the MVP should excel at the moment before the shutter is pressed: helping the subject and photographer know exactly what to adjust, then saying when to capture.
 
 APP SỬ DỤNG 100% TIẾNG VIỆT
 
@@ -29,8 +29,8 @@ By the end of the hackathon, users should be able to:
 * Open the camera.
 * Stand in front of the camera.
 * Receive real-time pose guidance.
+* Adjust until the app says the photo is ready to capture.
 * Capture a photo.
-* Receive AI-powered feedback.
 * Apply automatic color adjustments.
 * Save the final image.
 
@@ -68,10 +68,13 @@ Live Overlay
 User Adjusts Pose
       │
       ▼
+Ready-to-Capture Cue
+      │
+      ▼
 Capture Photo
       │
       ▼
-Photo Review
+Post-Capture Result
       │
       ▼
 Apply Editing Recipe
@@ -206,9 +209,10 @@ Expected response:
 
 ```json
 {
-  "main_cue":"Rotate your body 15°",
-  "secondary_cue":"Lift your chin",
-  "camera_instruction":"Move camera back slightly",
+  "main_cue":"Xoay vai nhẹ sang trái",
+  "secondary_cue":"Nâng cằm lên một chút",
+  "camera_instruction":"Lùi camera ra một bước",
+  "readiness":"improving",
   "editing_recipe":{
       "contrast":10,
       "temperature":4
@@ -225,16 +229,20 @@ Never upload the original image during MVP.
 Display only:
 
 * Direction arrows
-* One coaching message
+* One primary coaching message
+* Optional secondary refinement only when it does not distract from the primary cue
+* Ready-to-capture cue when the pose is good enough
 
 Example:
 
 ```
-↑ Lift Chin
+← Xoay vai nhẹ sang trái
+```
 
-← Rotate Body
+When ready:
 
-↑ Raise Shoulder
+```
+✓ Hoàn hảo! Chụp ngay
 ```
 
 No animation required.
@@ -253,19 +261,19 @@ UIImage
 
 ---
 
-## 9. Photo Review
+## 9. Post-Capture Result
 
 After capture display:
 
 ```
-★★★★☆
+Đã chụp xong
 
-Great composition.
+Đã áp dụng tinh chỉnh ánh sáng
 
-Try rotating your body slightly next time.
+Lưu ảnh
 ```
 
-Simple score is sufficient.
+The post-capture screen confirms the result and lets the user save or retake. It should not become the main coaching surface. Any improvement cue must come from the live coaching step before capture.
 
 ---
 
@@ -369,9 +377,10 @@ Responsibilities
 
 Responsibilities
 
-* Score photo
-* Show improvement suggestions
+* Show captured result
+* Show edited image
 * Apply Core Image recipe
+* Save final image
 
 ---
 
@@ -411,7 +420,7 @@ Responsible for:
 * Prompt Engine
 * OpenAI Integration
 * Overlay
-* Photo Review
+* Post-Capture Result
 * Core Image
 
 ---
@@ -452,7 +461,7 @@ Feature Completion
 * Overlay
 * Prompt
 * Capture
-* Review Screen
+* Result Screen
 
 ---
 
@@ -508,10 +517,10 @@ The following features are intentionally excluded:
 4. Vision detects the person and body pose.
 5. Overlay displays one real-time coaching cue.
 6. User adjusts their pose.
-7. Tap **Capture**.
-8. AI reviews the captured photo.
+7. Overlay displays **"Hoàn hảo! Chụp ngay"** when ready.
+8. Tap **Capture**.
 9. Core Image automatically applies the recommended editing recipe.
-10. Display a before/after comparison.
+10. Display the captured/edited result.
 11. Save the final photo.
 
 ---
@@ -524,10 +533,10 @@ The following features are intentionally excluded:
 * Rule Engine generates meaningful coaching.
 * AI (or mock API) returns a coaching response.
 * Overlay updates correctly.
+* Ready-to-capture cue appears when there are no blocking pose issues.
 * Capture succeeds.
-* Photo review screen appears.
+* Post-capture result screen appears.
 * Core Image editing recipe is applied.
-* Before/After comparison is visible.
 * Save photo works.
 * No crashes during the demo.
 
@@ -542,9 +551,10 @@ The following features are intentionally excluded:
 * Rule Engine
 * AI Coaching
 * Overlay
+* Ready-to-Capture Cue
 * Capture
-* Review
-* Auto Editing
+* Core Image Recipe
+* Save
 
 ## V1
 

@@ -75,20 +75,20 @@
         "Hiển thị CaptureButton, FlashToggle",
         "Coordinate với OverlayViewModel để show CoachingOverlay",
         "Trigger capture khi user tap",
-        "Navigate sang ReviewScreen sau capture"
+        "Navigate sang ResultScreen sau capture"
       ],
       "public_apis": [
         "CameraScreen (SwiftUI View — root entry point)",
         "CameraViewModel (ObservableObject)"
       ],
       "inputs": "CameraEngine (preview), OverlayViewModel (coaching state)",
-      "outputs": "User action: capture trigger, navigation to Review",
+      "outputs": "User action: capture trigger, navigation to Result",
       "dependencies": ["MOD-00", "MOD-01", "MOD-10 (LiveOverlay — for overlay UI)"],
       "folder_ownership": "Features/CameraExperience/",
       "can_build_independently": false,
       "can_build_in_parallel": true,
       "merge_risks": "Low — UI layer, conflict chủ yếu ở navigation setup",
-      "integration_notes": "Nhận CoachingOverlay từ MOD-10 dưới dạng ZStack overlay (inject qua protocol/closure để Dev A build với stub khi MOD-10 của Dev C chưa sẵn — tránh bị block). NavigationCoordinator handle push to ReviewScreen."
+      "integration_notes": "Nhận CoachingOverlay từ MOD-10 dưới dạng ZStack overlay (inject qua protocol/closure để Dev A build với stub khi MOD-10 của Dev C chưa sẵn — tránh bị block). NavigationCoordinator handle push to ResultScreen."
     },
 
     {
@@ -270,7 +270,7 @@
         "Gọi PromptBuilder → OpenAIClient",
         "Cache last valid AICoachingResponse",
         "Fallback sang RuleEngine khi AI fail/timeout",
-        "Emit AICoachingResponse cho OverlayViewModel và ReviewViewModel"
+        "Emit AICoachingResponse cho OverlayViewModel và ResultViewModel"
       ],
       "public_apis": [
         "AIOrchestrator",
@@ -326,7 +326,7 @@
         "Gọi CameraEngine.capturePhoto()",
         "Nhận UIImage",
         "Flash animation",
-        "Pass UIImage sang ReviewViewModel"
+        "Pass UIImage sang ResultViewModel"
       ],
       "public_apis": [
         "CaptureService",
@@ -339,7 +339,7 @@
       "can_build_independently": false,
       "can_build_in_parallel": true,
       "merge_risks": "Low",
-      "integration_notes": "Trigger từ CameraViewModel. UIImage + last AICoachingResponse pass cùng nhau sang ReviewViewModel."
+      "integration_notes": "Trigger từ CameraViewModel. UIImage + last AICoachingResponse pass cùng nhau sang ResultViewModel."
     },
 
     {
@@ -366,36 +366,35 @@
       "can_build_independently": true,
       "can_build_in_parallel": true,
       "merge_risks": "Low — pure image processing",
-      "integration_notes": "Không có UI. Unit-testable bằng cách so sánh pixel values. ReviewViewModel gọi sau khi nhận UIImage."
+      "integration_notes": "Không có UI. Unit-testable bằng cách so sánh pixel values. ResultViewModel gọi sau khi nhận UIImage."
     },
 
     {
       "id": "MOD-13",
-      "name": "PhotoReview",
+      "name": "PostCaptureResult",
       "priority": "Must Have",
       "owner": "Dev C",
-      "purpose": "Màn hình review sau chụp — điểm, feedback, before/after, save",
+      "purpose": "Màn hình kết quả sau chụp — ảnh đã tinh chỉnh, save/retake",
       "responsibilities": [
         "Nhận UIImage + AICoachingResponse",
         "Gọi CoreImageProcessor để có edited image",
-        "Hiển thị score (1-5 sao)",
-        "Hiển thị feedback text + improvement tip",
-        "Hiển thị BeforeAfterView",
+        "Hiển thị edited image",
+        "Hiển thị trạng thái ngắn: đã tinh chỉnh ánh sáng",
         "Save to Photos Library",
         "Navigate về Camera khi retake"
       ],
       "public_apis": [
-        "ReviewScreen (SwiftUI View)",
-        "ReviewViewModel(@Observable)"
+        "ResultScreen (SwiftUI View)",
+        "ResultViewModel(@Observable)"
       ],
       "inputs": "UIImage (original), AICoachingResponse",
       "outputs": "Saved photo in Photos Library, navigation back to Camera",
       "dependencies": ["MOD-00 (DesignSystem)", "MOD-09 (AIOrchestrator)", "MOD-12 (PhotoEditing)", "PHPhotoLibrary"],
-      "folder_ownership": "Features/PhotoReview/",
+      "folder_ownership": "Features/PhotoReview/ hoặc Features/PostCaptureResult/ tùy codebase hiện tại",
       "can_build_independently": false,
       "can_build_in_parallel": true,
       "merge_risks": "Low",
-      "integration_notes": "Presented as .sheet from CameraScreen. Cần Photos permission — NSPhotoLibraryAddUsageDescription (tiếng Việt) trong Info.plist để lưu ảnh. BeforeAfterView là custom drag-to-compare component."
+      "integration_notes": "Presented as .sheet from CameraScreen. Cần Photos permission — NSPhotoLibraryAddUsageDescription (tiếng Việt) trong Info.plist để lưu ảnh. BeforeAfterView là stretch goal, không block MVP."
     },
 
     {
@@ -408,7 +407,7 @@
         "Setup NavigationStack",
         "Check permissions on launch",
         "Inject shared dependencies (CameraEngine, VisionEngine, AIOrchestrator)",
-        "Route: Camera → Review → Camera"
+        "Route: Camera → Result → Camera"
       ],
       "public_apis": [
         "PicwoaApp (@main)",
@@ -434,7 +433,7 @@
       "responsibilities": [
         "Định nghĩa PoseObservation, PoseAnalysisResult",
         "Định nghĩa SceneContext, Direction, CoachingRule, RuleEngineResult (có framePosition)",
-        "Định nghĩa AICoachingResponse, EditingRecipe",
+        "Định nghĩa AICoachingResponse (bao gồm readiness), EditingRecipe",
         "Chỉ chứa value types thuần (struct/enum) — không có logic, không import framework UI/Infrastructure"
       ],
       "public_apis": [
@@ -444,7 +443,7 @@
         "enum Direction { up, down, left, right }",
         "struct CoachingRule { id, message: String, direction: Direction?, priority: Int }",
         "struct RuleEngineResult { issues: [CoachingRule], readyToCapture: Bool, framePosition: String }",
-        "struct AICoachingResponse { mainCue, secondaryCue, cameraInstruction, editingRecipe: EditingRecipe }",
+        "struct AICoachingResponse { mainCue, secondaryCue, cameraInstruction, readiness, editingRecipe: EditingRecipe }",
         "struct EditingRecipe { exposure, contrast, highlights, shadows, temperature, vibrance: Float }"
       ],
       "inputs": "None",
@@ -489,7 +488,7 @@
       "timeline": {
         "00:00-00:30": "Branch setup, định nghĩa shared models (AICoachingResponse, EditingRecipe)",
         "00:30-01:30": "MOD-08 OpenAIClient + MOD-07 PromptBuilder + MOD-12 CoreImageProcessor",
-        "01:30-02:30": "MOD-09 AIOrchestrator + MOD-10 LiveOverlay + MOD-13 ReviewScreen",
+        "01:30-02:30": "MOD-09 AIOrchestrator + MOD-10 LiveOverlay + MOD-13 ResultScreen",
         "02:30-03:15": "Integration với Dev B RuleEngine + Dev A camera",
         "03:15-04:00": "End-to-end test full demo flow"
       },
@@ -510,11 +509,11 @@
     { "step": 10, "from": "OpenAIClient", "to": "AIOrchestrator", "data": "AICoachingResponse" },
     { "step": 11, "from": "AIOrchestrator", "to": "LiveOverlay", "data": "AICoachingResponse (override Rule cue)" },
     { "step": 12, "from": "User", "to": "CaptureService", "data": "Tap capture button" },
-    { "step": 13, "from": "CaptureService", "to": "ReviewViewModel", "data": "UIImage + AICoachingResponse" },
-    { "step": 14, "from": "ReviewViewModel", "to": "CoreImageProcessor", "data": "UIImage + EditingRecipe" },
-    { "step": 15, "from": "CoreImageProcessor", "to": "ReviewScreen", "data": "UIImage (edited)" },
-    { "step": 16, "from": "User", "to": "ReviewViewModel", "data": "Tap Lưu ảnh" },
-    { "step": 17, "from": "ReviewViewModel", "to": "PHPhotoLibrary", "data": "UIImage (edited)" }
+    { "step": 13, "from": "CaptureService", "to": "ResultViewModel", "data": "UIImage + AICoachingResponse" },
+    { "step": 14, "from": "ResultViewModel", "to": "CoreImageProcessor", "data": "UIImage + EditingRecipe" },
+    { "step": 15, "from": "CoreImageProcessor", "to": "ResultScreen", "data": "UIImage (edited)" },
+    { "step": 16, "from": "User", "to": "ResultViewModel", "data": "Tap Lưu ảnh" },
+    { "step": 17, "from": "ResultViewModel", "to": "PHPhotoLibrary", "data": "UIImage (edited)" }
   ],
 
   "merge_strategy": {
@@ -537,11 +536,11 @@
       { "time": "00:30", "check": "Project builds, camera permission works, design tokens available" },
       { "time": "01:30", "check": "Camera preview 30 FPS + PoseObservation stream có data" },
       { "time": "02:30", "check": "Full pipeline: Camera → Vision → Rule → AI (mock) → Overlay visible" },
-      { "time": "03:15", "check": "Full demo flow: Camera → Capture → Review → Edit → Save" }
+      { "time": "03:15", "check": "Full demo flow: Camera → Live Coaching → Ready Cue → Capture → Result → Save" }
     ],
     "conflict_prevention": [
       "Shared models sống trong MOD-15 SharedKernel (Core/Domain/) — Dev A tạo & commit toàn bộ trong 30 phút đầu, không ai được định nghĩa lại type ở nơi khác",
-      "Mỗi dev chỉ touch folder của mình: A=CameraEngine+CameraExperience+PhotoCapture+Core/Domain(SharedKernel), B=VisionEngine+PoseCoaching+SceneAnalysis+AI/RuleEngine, C=AI/PromptBuilder+AI/OpenAIClient+AI/AIOrchestrator+LiveOverlay+PhotoReview+PhotoEditing",
+      "Mỗi dev chỉ touch folder của mình: A=CameraEngine+CameraExperience+PhotoCapture+Core/Domain(SharedKernel), B=VisionEngine+PoseCoaching+SceneAnalysis+AI/RuleEngine, C=AI/PromptBuilder+AI/OpenAIClient+AI/AIOrchestrator+LiveOverlay+PhotoReview(or PostCaptureResult)+PhotoEditing",
       "App/ chỉ Dev A touch khi integration",
       "Core/DesignSystem/ và Core/Domain/ frozen sau 00:30"
     ],
@@ -563,13 +562,13 @@
       "MOD-10: LiveOverlay",
       "MOD-11: PhotoCapture",
       "MOD-12: PhotoEditing",
-      "MOD-13: PhotoReview",
+      "MOD-13: PostCaptureResult",
       "MOD-14: AppCoordinator",
       "MOD-15: SharedKernel (Core/Domain models)"
     ],
     "should_have": [
-      "BeforeAfter drag-to-compare interaction (thay vì static side-by-side)",
       "Haptic feedback khi coaching cue thay đổi",
+      "BeforeAfter drag-to-compare interaction (thay vì static side-by-side)",
       "Score animation (counting up)"
     ],
     "future": [
@@ -609,7 +608,7 @@
     },
     {
       "id": "RISK-05",
-      "description": "CoreImage processing chậm trên iPhone cũ gây review screen lag",
+      "description": "CoreImage processing chậm trên iPhone cũ gây result screen lag",
       "impact": "Low",
       "mitigation": "Chạy CoreImageProcessor trên background thread, show loading indicator"
     }

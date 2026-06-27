@@ -98,10 +98,10 @@ Picwoa giúp người dùng cải thiện ảnh **trước khi chụp**, không 
 | 1 | Mở app | Tap icon | Camera mở ngay, không splash screen | Preview hiển thị ≤ 2s |
 | 2 | Vào frame | Người dùng bước vào | Vision phát hiện người | Overlay hiển thị skeleton |
 | 3 | Nhận coaching | Nhìn overlay | Rule Engine phân tích tư thế | Hiển thị 1 gợi ý: "↑ Ngẩng đầu lên" |
-| 4 | Điều chỉnh | Sửa tư thế | Vision cập nhật real-time | Score cải thiện, gợi ý thay đổi |
+| 4 | Điều chỉnh | Sửa tư thế | Vision cập nhật real-time | Cue thay đổi theo vấn đề quan trọng nhất |
 | 5 | Sẵn sàng | Tư thế đúng | AI xác nhận: "Hoàn hảo. Chụp ngay!" | Capture button sáng lên |
-| 6 | Chụp | Tap Capture | AVFoundation chụp ảnh | Chuyển sang Review screen |
-| 7 | Xem review | — | AI chấm điểm + gợi ý + Core Image recipe | Hiển thị điểm, trước/sau |
+| 6 | Chụp | Tap Capture | AVFoundation chụp ảnh | Chuyển sang màn kết quả |
+| 7 | Xem kết quả | — | Core Image recipe được áp dụng | Hiển thị ảnh đã tinh chỉnh |
 | 8 | Lưu | Tap Lưu | Ghi vào Photo Library | Thông báo thành công |
 
 ---
@@ -244,16 +244,16 @@ Picwoa giúp người dùng cải thiện ảnh **trước khi chụp**, không 
 | **Acceptance Criteria** | Capture latency < 500ms. Ảnh full resolution |
 | **Priority** | MVP |
 
-### Feature 9 — Photo Review
+### Feature 9 — Post-Capture Result
 
 | | |
 |-|-|
-| **Description** | Hiển thị ảnh vừa chụp + điểm + gợi ý cải thiện |
+| **Description** | Hiển thị ảnh vừa chụp sau khi áp dụng chỉnh màu tự động |
 | **Input** | `UIImage` + `AICoachingResponse` |
-| **Output** | Review screen với score + feedback |
-| **Business Rules** | Score 1–5 sao. Hiển thị nhận xét ngắn + 1 gợi ý cho lần sau |
-| **Edge Cases** | Không có AI response → hiển thị score cơ bản từ Rule Engine |
-| **Acceptance Criteria** | Review screen xuất hiện ≤ 1 giây sau capture |
+| **Output** | Result screen với ảnh đã tinh chỉnh + hành động Lưu/Chụp lại |
+| **Business Rules** | Không chấm điểm ảnh như workflow chính. Mọi gợi ý cải thiện phải xuất hiện trước capture trong Live Overlay |
+| **Edge Cases** | Không có AI response → hiển thị ảnh gốc hoặc default editing recipe |
+| **Acceptance Criteria** | Result screen xuất hiện ≤ 1 giây sau capture |
 | **Priority** | MVP |
 
 ### Feature 10 — Auto Editing
@@ -263,9 +263,9 @@ Picwoa giúp người dùng cải thiện ảnh **trước khi chụp**, không 
 | **Description** | Áp dụng editing recipe từ AI lên ảnh bằng Core Image |
 | **Input** | `UIImage` + `editing_recipe` |
 | **Output** | `UIImage` đã chỉnh sửa |
-| **Business Rules** | Dùng CIFilter. Áp dụng: exposure, contrast, highlights, shadows, temperature, vibrance. Hiển thị before/after |
+| **Business Rules** | Dùng CIFilter. Áp dụng: exposure, contrast, highlights, shadows, temperature, vibrance. Không dùng preset filter |
 | **Edge Cases** | Recipe null/empty → hiển thị ảnh gốc |
-| **Acceptance Criteria** | Processing < 500ms. Before/after comparison visible |
+| **Acceptance Criteria** | Processing < 500ms. Ảnh kết quả hiển thị rõ ràng |
 | **Priority** | MVP |
 
 ### Feature 11 — Save Photo
@@ -335,10 +335,10 @@ Picwoa giúp người dùng cải thiện ảnh **trước khi chụp**, không 
 - Rule Engine (deterministic coaching)
 - AI Coaching via OpenAI (text metadata only)
 - Live Overlay (1 gợi ý chính)
+- Ready-to-Capture Cue
 - Photo Capture
-- Photo Review (score + feedback)
+- Post-Capture Result
 - Auto Editing (Core Image)
-- Before/After Comparison
 - Save to Photos Library
 - Mock Mode (khi không có API key)
 
@@ -360,6 +360,7 @@ Picwoa giúp người dùng cải thiện ảnh **trước khi chụp**, không 
 - Scene sub-classification (cafe, beach, street)
 - Auto Capture (chụp tự động khi tư thế đạt chuẩn)
 - Haptic feedback khi coaching cue thay đổi
+- Before/After Comparison
 - Score animation
 
 ---
@@ -368,7 +369,7 @@ Picwoa giúp người dùng cải thiện ảnh **trước khi chụp**, không 
 
 ### MVP (Hackathon)
 
-Camera + Vision + Rule Engine + AI Coaching + Overlay + Capture + Review + Auto Editing
+Camera + Vision + Rule Engine + AI Coaching + Overlay + Ready-to-Capture Cue + Capture + Core Image Recipe + Save
 
 ### V1
 
@@ -512,17 +513,12 @@ curveSpring      = .spring(response: 0.3, dampingFraction: 0.7)
 - **States:** Detecting / Detected / Lost
 - **Style:** Subtle white lines, opacity 40%
 
-### ScoreView
-
-- **Purpose:** Hiển thị điểm ảnh sau capture
-- **Properties:** score (1–5), label text
-- **Variants:** Stars display
-
 ### BeforeAfterView
 
 - **Purpose:** So sánh ảnh gốc và ảnh đã edit
 - **Properties:** original: UIImage, edited: UIImage
 - **Interaction:** Swipe hoặc drag để compare
+- **Priority:** Stretch goal, không bắt buộc cho MVP
 
 ### PermissionView
 
@@ -565,17 +561,15 @@ curveSpring      = .spring(response: 0.3, dampingFraction: 0.7)
 
 ---
 
-### Screen 2 — Review Screen
+### Screen 2 — Result Screen
 
 **Purpose:** Hiển thị kết quả sau chụp
 
 **Layout:**
 ```
 [Navigation Bar: "Kết quả" + Nút X đóng]
-[BeforeAfterView — top half]
-[ScoreView — ★★★★☆]
-[Feedback Text — 1-2 câu nhận xét]
-[Improvement Tip — "Lần sau hãy..."]
+[Edited Image — top]
+[Status Text — "Đã tinh chỉnh ánh sáng"]
 [Nút: Lưu ảnh]   [Nút: Chụp lại]
 ```
 
@@ -614,14 +608,14 @@ Permission Check
         ▼
     CameraScreen (main)
         │
-        └─ Capture ──► ReviewScreen (modal sheet)
+        └─ Capture ──► ResultScreen (modal sheet)
                           │
                           ├─ Save ──► CameraScreen
                           └─ Retake ──► CameraScreen
 ```
 
 - **NavigationStack** không dùng ở màn camera (full-screen experience)
-- ReviewScreen: `.sheet` presentation, `.large` detent
+- ResultScreen: `.sheet` presentation, `.large` detent
 - Không có tab bar trong MVP
 
 ---
@@ -636,7 +630,7 @@ Permission Check
 | Pose Analysis | — | ✓ | — | — | — |
 | Coaching Text | — | Fallback | — | — | ✓ |
 | Editing Recipe | — | — | — | — | ✓ |
-| Score Calculation | ✓ | ✓ | — | — | — |
+| Readiness Signal | ✓ | ✓ | — | — | — |
 | Auto Editing | ✓ (CoreImage) | — | — | — | — |
 
 ---
@@ -662,8 +656,7 @@ Permission Check
   "main_cue": "string (tiếng Việt, ≤ 40 ký tự)",
   "secondary_cue": "string (tiếng Việt, ≤ 40 ký tự) | null",
   "camera_instruction": "string (tiếng Việt) | null",
-  "score": 1-5,
-  "feedback": "string (tiếng Việt, 1-2 câu)",
+  "readiness": "not_ready | improving | ready",
   "editing_recipe": {
     "exposure": -1.0 to 1.0,
     "contrast": -100 to 100,
@@ -679,7 +672,7 @@ Permission Check
 
 - `main_cue` bắt buộc, không được null
 - `editing_recipe` tất cả fields bắt buộc
-- Score phải trong range 1–5
+- `readiness` bắt buộc; khi `ready`, `main_cue` phải là lời nhắc chụp ngay
 - Tất cả text fields phải bằng tiếng Việt
 
 ### Fallback Behavior
@@ -772,13 +765,13 @@ Then: Response received ≤ 1s, cue updated, editing_recipe non-null
 ```
 Given: User taps Capture
 When: Capture succeeds
-Then: Review screen shows in ≤ 1s, Core Image recipe applied, before/after visible
+Then: Result screen shows in ≤ 1s, Core Image recipe applied, edited image visible
 ```
 
 ### Save
 
 ```
-Given: User on Review screen
+Given: User on Result screen
 When: User taps "Lưu ảnh"
 Then: Edited photo saved to Photos Library, confirmation shown
 ```
@@ -802,14 +795,14 @@ Then: Edited photo saved to Photos Library, confirmation shown
 |------|--------|------------|
 | Coaching cue quá nhiều → overwhelm | High | Strict 1 cue max rule |
 | Overlay che camera view | Medium | Transparent glass, bottom-only placement |
-| Score cảm giác không chính xác | Low | Giải thích criteria rõ, không chỉ hiện số |
+| User bỏ qua cue và chụp quá sớm | Medium | Ready state rõ ràng, capture button pulse khi đạt chuẩn |
 
 ### AI Risks
 
 | Risk | Impact | Mitigation |
 |------|--------|------------|
 | Coaching text không tự nhiên | Medium | Prompt engineering rõ ràng, test nhiều cases |
-| Editing recipe không phù hợp cảnh | Low | Clamp values, before/after cho user chọn |
+| Editing recipe không phù hợp cảnh | Low | Clamp values, allow retake/save original fallback |
 
 ### Project Risks
 
@@ -829,7 +822,7 @@ Then: Edited photo saved to Photos Library, confirmation shown
 | AI response | < 1s | Bao gồm network |
 | Coaching cue accuracy | Subjective | Review bởi team |
 | Overlay latency | < 100ms | Visual check |
-| Before/after comparison | Visible | Manual QA |
+| Ready-to-capture cue | Visible | Manual QA |
 
 ---
 

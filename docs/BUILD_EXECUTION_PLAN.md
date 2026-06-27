@@ -2,7 +2,7 @@
 
 **Version:** 1.0  
 **Context:** Hackathon — 4 giờ, 3 developers + AI agents  
-**Goal:** Working demo: Camera → AI Coaching → Capture → Review → Save  
+**Goal:** Working demo: Camera → Live AI Coaching → Ready Cue → Capture → Auto Enhance → Save  
 
 ---
 
@@ -15,9 +15,10 @@ Build một vertical demo flow hoàn chỉnh trước, rồi mới polish. Nếu
 **Priority order:**
 1. Camera mở được
 2. Overlay hiển thị coaching cue (dù từ Rule Engine hay Mock AI)
-3. Capture + Review + Save chạy được
-4. AI thật thay thế Mock AI
-5. Polish UI
+3. Ready-to-capture cue xuất hiện đúng lúc
+4. Capture + Result + Save chạy được
+5. AI thật thay thế Mock AI
+6. Polish UI
 
 ### Parallelization Strategy
 
@@ -30,7 +31,7 @@ Ba streams chạy độc lập trong 2 giờ đầu, hội tụ tại checkpoint
   │
   ├─ Dev B ─[Vision]────────[RuleEngine]──[Integration]──[Polish]
   │
-  └─ Dev C ─[OpenAI+Mock]──[Overlay+Review]──[Integration]──[Polish]
+  └─ Dev C ─[OpenAI+Mock]──[Overlay+Result]──[Integration]──[Polish]
                                         ▲
                                    02:30 merge
 ```
@@ -49,7 +50,7 @@ Ba streams chạy độc lập trong 2 giờ đầu, hội tụ tại checkpoint
 | M1 — Project Live | 00:30 | Xcode build, camera permission, shared models committed |
 | M2 — Camera + Vision | 01:30 | Preview 30 FPS + Pose data streaming |
 | M3 — AI Pipe Ready | 02:00 | Mock AI → Overlay visible on camera screen |
-| M4 — Full MVP | 02:30 | Capture → Review → Edit → Save |
+| M4 — Full MVP | 02:30 | Ready Cue → Capture → Result → Save |
 | M5 — Demo Ready | 03:15 | End-to-end flow không crash, UI polished |
 | M6 — Rehearsal | 03:30 | Demo rehearsal + final bug fix |
 
@@ -128,16 +129,17 @@ Ba streams chạy độc lập trong 2 giờ đầu, hội tụ tại checkpoint
 - `AIOrchestrator` với throttle + fallback
 - `LiveOverlay` (`CoachingCard` + `DirectionArrow`)
 - `CoreImageProcessor` apply recipe
-- `ReviewScreen` với score + before/after
+- `ResultScreen` với edited image + save/retake
 
 **Exit Criteria:**
 - `MockAIClient` return `AICoachingResponse` trong < 500ms
 - `CoachingCard` hiển thị text đúng
+- Overlay hiển thị "Hoàn hảo! Chụp ngay" khi `readyToCapture = true`
 - `CoreImageProcessor` thay đổi visible trên ảnh test
-- `ReviewScreen` hiển thị score + 2 buttons
+- `ResultScreen` hiển thị ảnh kết quả + 2 buttons
 
 **Risks:**
-- Nhiều modules trong 1 stream → Dev C ưu tiên MockAI + Overlay trước, Review sau
+- Nhiều modules trong 1 stream → Dev C ưu tiên MockAI + Overlay + Ready Cue trước, Result sau
 
 ---
 
@@ -148,13 +150,14 @@ Ba streams chạy độc lập trong 2 giờ đầu, hội tụ tại checkpoint
 **Deliverables:**
 - `AppCoordinator` inject dependencies
 - Camera → Vision → Rule → Overlay pipeline live
-- Capture → Review → Edit → Save pipeline live
+- Ready Cue → Capture → Result → Save pipeline live
 - AI thật thay MockAI (nếu có API key)
 
 **Exit Criteria:**
 - Demo flow 11 bước chạy không crash
 - Overlay update khi pose thay đổi
-- Review screen xuất hiện sau capture
+- Ready-to-capture cue xuất hiện khi không còn blocking issues
+- Result screen xuất hiện sau capture
 - Save thành công vào Photos
 
 **Risks:**
@@ -197,7 +200,7 @@ Ba streams chạy độc lập trong 2 giờ đầu, hội tụ tại checkpoint
 | MOD-10 LiveOverlay | Dev C | AI | 20 min | Must Have | not_started | CoachingCard visible on camera screen |
 | MOD-11 PhotoCapture | Dev A | AI | 15 min | Must Have | not_started | UIImage returned on tap |
 | MOD-12 PhotoEditing | Dev C | AI | 20 min | Must Have | not_started | Visible change applied to test image |
-| MOD-13 PhotoReview | Dev C | Human+AI | 25 min | Must Have | not_started | Score + before/after + save button |
+| MOD-13 PostCaptureResult | Dev C | Human+AI | 20 min | Must Have | not_started | Edited image + save/retake buttons |
 | MOD-14 AppCoordinator | Dev A | Human | 20 min | Must Have | not_started | All modules wired, navigation works |
 
 ---
@@ -245,7 +248,7 @@ MOD-03 (30min) → MOD-04 (20min) → MOD-06 (25min)
 **Tại sao độc lập:**
 - OpenAIClient chỉ cần URLSession — test với real API hoặc mock
 - CoreImageProcessor chỉ cần UIImage + struct — test với bất kỳ ảnh nào
-- ReviewScreen mock data đủ để build UI
+- ResultScreen mock data đủ để build UI
 
 **Sequence:**
 ```
@@ -275,7 +278,7 @@ MOD-12 (20min) ──► MOD-13 (25min)
 | MOD-10 LiveOverlay | **Codex / Cursor** | SwiftUI overlay, animation | Review visual |
 | MOD-11 PhotoCapture | **Codex** | Thin wrapper, ít logic | Test capture returns image |
 | MOD-12 PhotoEditing | **Codex** | CoreImage filter chain, công thức rõ ràng | Verify visual output |
-| MOD-13 PhotoReview | **Codex / Cursor** | SwiftUI layout, presentation | Review UI |
+| MOD-13 PostCaptureResult | **Codex / Cursor** | SwiftUI layout, presentation | Result UI |
 | MOD-14 AppCoordinator | **Claude Code** | DI wiring, navigation graph, Swift 6 | Required — full build test |
 
 ---
@@ -372,10 +375,8 @@ v0.1-demo ← sau 03:15 (demo ready)
 
 **Criteria:**
 - [ ] Capture button tap → `UIImage` returned
-- [ ] `ReviewScreen` xuất hiện sau capture
-- [ ] Score hiển thị (1–5 sao)
-- [ ] Feedback text tiếng Việt
-- [ ] `BeforeAfterView` hiển thị 2 ảnh
+- [ ] `ResultScreen` xuất hiện sau capture
+- [ ] Edited image hiển thị rõ
 - [ ] "Lưu ảnh" button hoạt động
 - [ ] "Chụp lại" navigate về Camera
 
@@ -519,7 +520,7 @@ enum AppNavigationEvent {
 | MOD-10 LiveOverlay | 0% | Dev C | No | MOD-09 | 02:00 |
 | MOD-11 PhotoCapture | 0% | Dev A | No | MOD-01 | 01:35 |
 | MOD-12 PhotoEditing | 0% | Dev C | No | Shared models | 01:20 |
-| MOD-13 PhotoReview | 0% | Dev C | No | MOD-12, MOD-09 | 02:15 |
+| MOD-13 PostCaptureResult | 0% | Dev C | No | MOD-12, MOD-09 | 02:15 |
 | MOD-14 AppCoordinator | 0% | Dev A | No | All modules | 03:00 |
 
 ---
@@ -547,7 +548,7 @@ enum AppNavigationEvent {
 | Person detected | Skeleton overlay xuất hiện |
 | Coaching cue | Text tiếng Việt đúng với pose |
 | Capture | Ảnh rõ nét, không blur |
-| Review screen | Score + before/after visible |
+| Result screen | Edited image visible |
 | Save | Ảnh xuất hiện trong Photos app |
 | Offline mode | Overlay vẫn hoạt động khi tắt wifi |
 | Permission denied | Guide screen hiển thị, không crash |
@@ -566,10 +567,11 @@ enum AppNavigationEvent {
 1. Launch app → camera mở trong ≤ 2s
 2. Đứng trước camera → CoachingCard hiển thị
 3. Thay đổi tư thế → cue thay đổi
-4. Tap Capture → flash + chuyển màn
-5. Review screen → score + before/after visible
-6. Tap "Lưu ảnh" → confirmation + về camera
-7. Mở Photos app → ảnh tồn tại
+4. Tư thế đúng → "Hoàn hảo! Chụp ngay" xuất hiện
+5. Tap Capture → flash + chuyển màn
+6. Result screen → edited image visible
+7. Tap "Lưu ảnh" → confirmation + về camera
+8. Mở Photos app → ảnh tồn tại
 ```
 
 ---
@@ -603,8 +605,7 @@ Chạy checklist này trước khi lên demo. Tất cả phải pass.
 - [ ] Cue thay đổi khi điều chỉnh tư thế
 - [ ] "Hoàn hảo! Chụp ngay" xuất hiện khi tư thế đúng
 - [ ] Capture: tap button → ảnh được chụp, không lag
-- [ ] Review screen: xuất hiện sau capture, có score
-- [ ] Before/After: 2 ảnh hiển thị rõ
+- [ ] Result screen: xuất hiện sau capture, có ảnh kết quả
 - [ ] Core Image: ảnh sau chỉnh sửa có sự khác biệt nhìn thấy được
 - [ ] Save: tap "Lưu ảnh" → ảnh trong Photos app
 - [ ] Retake: navigate về camera, không crash

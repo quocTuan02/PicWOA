@@ -66,7 +66,7 @@ Vision → personDetected = false
 ```
 Vision → pose detected
 → RuleEngine → issues = []
-→ emit CoachingResponse(mainCue: "Hoàn hảo! Chụp ngay", score: 5)
+→ emit CoachingResponse(mainCue: "Hoàn hảo! Chụp ngay", readiness: "ready")
 → STOP. Không gọi AI.
 ```
 
@@ -266,8 +266,7 @@ Worst case: 5 issues = ~15 tokens. Excellent.
   "main_cue": "Ngẩng đầu lên",
   "secondary_cue": "Nhấc vai trái lên",
   "camera_instruction": null,
-  "score": 3,
-  "feedback": "Tư thế khá ổn, cần điều chỉnh góc cằm.",
+  "readiness": "improving",
   "editing_recipe": {
     "exposure": 0.1,
     "contrast": 10,
@@ -288,7 +287,7 @@ struct ResponseValidator {
     static func validate(_ response: AICoachingResponse) -> Bool {
         guard !response.mainCue.isEmpty else { return false }
         guard response.mainCue.count <= 40 else { return false }
-        guard (1...5).contains(response.score) else { return false }
+        guard CaptureReadiness.allCases.contains(response.readiness) else { return false }
         guard (-1.0...1.0).contains(response.editingRecipe.exposure) else { return false }
         guard (-100...100).contains(response.editingRecipe.contrast) else { return false }
         return true
@@ -317,12 +316,12 @@ Tier 3 — Rule Engine (offline / AI fail)
     RuleEngine result luôn available
     → mainCue = topIssue.message
     → editingRecipe = .neutral (hoặc last cached recipe)
-    → score = max(1, 5 - issues.count)
+    → readiness = issues.isEmpty ? .ready : .improving
 
 Tier 4 — Default Coaching (Vision fail)
     Không có PoseObservation
     → emit hardcoded "Bước vào khung hình"
-    → không hiển thị score
+    → readiness = .notReady
 ```
 
 ### Fallback Decision Tree
