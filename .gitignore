@@ -3,6 +3,10 @@
 *.xcworkspace/xcuserdata/
 *.xcworkspace/xcshareddata/
 DerivedData/
+
+# xcodegen-generated (regenerate with `xcodegen generate`)
+*.xcodeproj/
+Picwoa/Resources/Info.plist
 *.moved-aside
 *.pbxuser
 !default.pbxuser
