@@ -4,29 +4,24 @@ import AVFoundation
 actor VisionEngine: PoseProvider {
     static let shared = VisionEngine()
 
-    private let _poseContinuation: AsyncStream<PoseObservation?>.Continuation
-    private let _personContinuation: AsyncStream<Bool>.Continuation
+    // Multicast so each `start()` can re-subscribe with a fresh stream — a bare AsyncStream
+    // only supports one iteration and would go silent after a lifecycle stop/start.
+    private let poseBroadcaster = AsyncBroadcaster<PoseObservation?>()
+    private let personBroadcaster = AsyncBroadcaster<Bool>()
 
-    nonisolated let poseStream: AsyncStream<PoseObservation?>
-    nonisolated let personDetectedStream: AsyncStream<Bool>
+    nonisolated var poseStream: AsyncStream<PoseObservation?> { poseBroadcaster.subscribe() }
+    nonisolated var personDetectedStream: AsyncStream<Bool> { personBroadcaster.subscribe() }
 
-    private init() {
-        let (poseStr, poseCont) = AsyncStream<PoseObservation?>.makeStream()
-        let (personStr, personCont) = AsyncStream<Bool>.makeStream()
-        poseStream = poseStr
-        personDetectedStream = personStr
-        _poseContinuation = poseCont
-        _personContinuation = personCont
-    }
+    private init() {}
 
     func process(sampleBuffer: CMSampleBuffer) {
         let pose = PoseDetector.detect(in: sampleBuffer)
-        _poseContinuation.yield(pose)
+        poseBroadcaster.yield(pose)
 
         if pose != nil {
-            _personContinuation.yield(true)
+            personBroadcaster.yield(true)
         } else {
-            _personContinuation.yield(PersonDetector.detect(in: sampleBuffer))
+            personBroadcaster.yield(PersonDetector.detect(in: sampleBuffer))
         }
     }
 }

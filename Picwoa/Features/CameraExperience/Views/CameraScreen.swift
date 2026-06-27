@@ -102,7 +102,11 @@ struct CameraScreen: View {
         Task {
             if let image = await viewModel.capture() {
                 capturedImage = image
-                coachingResponse = overlayViewModel.lastResponse ?? .placeholder
+                // Safety net: prefer the live response, fall back to the last-known one
+                // (kept even when the subject briefly leaves frame), then a static placeholder.
+                coachingResponse = overlayViewModel.currentResponse
+                    ?? overlayViewModel.lastResponse
+                    ?? .placeholder
                 showReview = true
             }
         }

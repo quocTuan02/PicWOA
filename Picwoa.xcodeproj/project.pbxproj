@@ -25,6 +25,7 @@
 		1E35914CEBDDE5F0918BFBA3 /* ResponseValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDB00C591A9ECEDAA28C07FA /* ResponseValidatorTests.swift */; };
 		237009E97EDE55EC197629DF /* SceneClassifierService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 839DD560CEEF93FE7156F060 /* SceneClassifierService.swift */; };
 		23AB8BE0C6B1DFA49B2A2AD8 /* OpenAIRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 952A012CE2F810F36B737ACB /* OpenAIRequest.swift */; };
+		2A6375DFE8AD111D47D1FFBA /* AsyncBroadcaster.swift in Sources */ = {isa = PBXBuildFile; fileRef = D45E88AF288494AD5A00112F /* AsyncBroadcaster.swift */; };
 		2C1A853312DD37CF6E3E36A9 /* PromptTemplates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03394D42B4EE6FB91D23B521 /* PromptTemplates.swift */; };
 		35BB297CA64D476F5FE32E44 /* AIOrchestratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7E9DDD590528A23FBB99518 /* AIOrchestratorTests.swift */; };
 		394A4AF3F2F08A09BE010BE8 /* ReviewViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A38AE6F6D811AE63715ABF5 /* ReviewViewModel.swift */; };
@@ -170,6 +171,7 @@
 		C89FBAC1AA0979F5DAC091A7 /* MockAIClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAIClientTests.swift; sourceTree = "<group>"; };
 		C938EB336300D7D246DAE30A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CB357710F936E7FCFD6F91A3 /* PromptBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptBuilder.swift; sourceTree = "<group>"; };
+		D45E88AF288494AD5A00112F /* AsyncBroadcaster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncBroadcaster.swift; sourceTree = "<group>"; };
 		D4C5D57C4F03BA8B3035B693 /* ResponseParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResponseParser.swift; sourceTree = "<group>"; };
 		D62B625B19797131803C30BA /* PoseObservation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseObservation.swift; sourceTree = "<group>"; };
 		D7E9DDD590528A23FBB99518 /* AIOrchestratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIOrchestratorTests.swift; sourceTree = "<group>"; };
@@ -217,6 +219,7 @@
 		0B82E3CDE437AF3CEC3428DC /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				B5633C22F7D6BFCB11FF5DFA /* Concurrency */,
 				AE24243CCF9908DBABC30B94 /* Models */,
 				912AF3D1E4AE0494215B08B7 /* Protocols */,
 			);
@@ -469,6 +472,14 @@
 				9AED88DA21862426D122172E /* SceneContext.swift */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		B5633C22F7D6BFCB11FF5DFA /* Concurrency */ = {
+			isa = PBXGroup;
+			children = (
+				D45E88AF288494AD5A00112F /* AsyncBroadcaster.swift */,
+			);
+			path = Concurrency;
 			sourceTree = "<group>";
 		};
 		B5BA87E29CA06A274AEC5DC9 /* PoseSuggestion */ = {
@@ -740,6 +751,7 @@
 				BDAE3E302C8AF739AB230CBB /* AVFoundation+Sendable.swift in Sources */,
 				9AB21A5D11ADD428CF2682BB /* Animation.swift in Sources */,
 				7F991EDFC8D0F18E24A101A7 /* AppCoordinator.swift in Sources */,
+				2A6375DFE8AD111D47D1FFBA /* AsyncBroadcaster.swift in Sources */,
 				9D592E757B0FC54085288900 /* BeforeAfterView.swift in Sources */,
 				9BD55CEF982C9F5C924304DF /* BottomToolbar.swift in Sources */,
 				10776037FBC9D1CA440FD629 /* CameraBufferProvider.swift in Sources */,

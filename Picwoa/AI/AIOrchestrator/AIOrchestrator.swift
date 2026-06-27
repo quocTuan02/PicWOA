@@ -25,8 +25,12 @@ final class AIOrchestrator: AICoachingProvider {
     private(set) var lastMetrics: OrchestratorMetrics?
 
     // Output stream — nonisolated so non-MainActor consumers (AppCoordinator wiring) can read it.
-    nonisolated let coachingStream: AsyncStream<AICoachingResponse>
-    private let continuation: AsyncStream<AICoachingResponse>.Continuation
+    // Multicast so each `start()` re-subscribes with a fresh stream; bufferingNewest(1) keeps
+    // only the latest coaching per subscriber (the overlay never needs a backlog).
+    private let coachingBroadcaster = AsyncBroadcaster<AICoachingResponse>()
+    nonisolated var coachingStream: AsyncStream<AICoachingResponse> {
+        coachingBroadcaster.subscribe(bufferingPolicy: .bufferingNewest(1))
+    }
 
     // Stream-driven tasks (when using start(ruleStream:sceneStream:))
     private var streamTasks: [Task<Void, Never>] = []
@@ -44,12 +48,6 @@ final class AIOrchestrator: AICoachingProvider {
         self.config = config
         self.backend = backend ?? AIConfig.makeBackend(config: config)
         self.ruleEngine = ruleEngine
-        // bufferingNewest(1): the overlay only needs the latest coaching; avoids a
-        // backlog of stale responses if the UI consumes slower than the emit rate (real-time path).
-        (coachingStream, continuation) = AsyncStream.makeStream(
-            of: AICoachingResponse.self,
-            bufferingPolicy: .bufferingNewest(1)
-        )
     }
 
     // MARK: - Stream-driven entry (integration with Dev B)
@@ -270,7 +268,7 @@ final class AIOrchestrator: AICoachingProvider {
     // MARK: - Helpers
 
     private func emit(_ response: AICoachingResponse) {
-        continuation.yield(response)
+        coachingBroadcaster.yield(response)
     }
 
     private func isTimeout(_ error: Error) -> Bool {
