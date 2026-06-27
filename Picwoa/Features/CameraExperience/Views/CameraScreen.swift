@@ -21,6 +21,10 @@ struct CameraScreen: View {
             CameraPreviewView(previewLayer: viewModel.previewLayer)
                 .ignoresSafeArea()
 
+            // Skeleton pose overlay
+            SkeletonOverlay(pose: overlayViewModel.currentPose)
+                .ignoresSafeArea()
+
             // Coaching overlay
             CoachingOverlay(viewModel: overlayViewModel)
 
@@ -29,6 +33,7 @@ struct CameraScreen: View {
                 Spacer()
                 BottomToolbar(
                     isCapturing: viewModel.isCapturing,
+                    isReadyToCapture: overlayViewModel.isReadyToCapture,
                     onCapture: handleCapture
                 )
             }

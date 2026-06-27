@@ -10,6 +10,8 @@ final class AppCoordinator {
     let overlayViewModel: OverlayViewModel
     let cameraViewModel: CameraViewModel
 
+    private let sceneClassifier: SceneClassifierService
+    private var latestSceneContext: SceneContext = .outdoor
     private var tasks: [Task<Void, Never>] = []
     private var hasStarted = false
 
@@ -17,11 +19,13 @@ final class AppCoordinator {
         cameraEngine: CameraEngine = .shared,
         visionEngine: VisionEngine = .shared,
         ruleEngine: RuleEngine = RuleEngine(),
+        sceneClassifier: SceneClassifierService = SceneClassifierService(),
         aiBackend: any AIBackendProtocol = MockAIClient()
     ) {
         self.cameraEngine = cameraEngine
         self.visionEngine = visionEngine
         self.ruleEngine = ruleEngine
+        self.sceneClassifier = sceneClassifier
         self.orchestrator = AIOrchestrator(backend: aiBackend, ruleEngine: ruleEngine)
         self.overlayViewModel = OverlayViewModel()
         self.cameraViewModel = CameraViewModel(
@@ -40,10 +44,24 @@ final class AppCoordinator {
             }
         })
 
-        tasks.append(Task { [visionEngine, orchestrator] in
+        tasks.append(Task { [weak self, cameraEngine, sceneClassifier] in
+            var lastClassificationTime = Date.distantPast
+            for await buffer in cameraEngine.makeSampleBufferStream() {
+                guard Date().timeIntervalSince(lastClassificationTime) >= 5 else { continue }
+                lastClassificationTime = Date()
+                let scene = await sceneClassifier.classify(buffer)
+                await MainActor.run {
+                    self?.latestSceneContext = scene
+                }
+            }
+        })
+
+        tasks.append(Task { [weak self, visionEngine, orchestrator, overlayViewModel] in
             for await pose in visionEngine.poseStream {
+                await MainActor.run { overlayViewModel.updatePose(pose) }
                 guard let pose else { continue }
-                await orchestrator.process(pose: pose, scene: .outdoor)
+                let scene = await MainActor.run { self?.latestSceneContext ?? .outdoor }
+                await orchestrator.process(pose: pose, scene: scene)
             }
         })
 
@@ -68,6 +86,7 @@ final class AppCoordinator {
         tasks.forEach { $0.cancel() }
         tasks.removeAll()
         hasStarted = false
+        latestSceneContext = .outdoor
         cameraEngine.stopSession()
     }
 }
