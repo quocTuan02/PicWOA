@@ -53,8 +53,9 @@ final class AppCoordinator {
             }
         })
 
-        tasks.append(Task { [visionEngine, orchestrator, sceneStore] in
+        tasks.append(Task { [visionEngine, orchestrator, sceneStore, overlayViewModel] in
             for await pose in visionEngine.poseStream {
+                await MainActor.run { overlayViewModel.updatePose(pose) }
                 guard let pose else { continue }
                 let scene = await sceneStore.current()
                 await orchestrator.process(pose: pose, scene: scene)

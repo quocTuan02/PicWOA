@@ -60,6 +60,7 @@
 		C6E2DED51640ECC7B3D2D59E /* OverlayViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FCF41F3CA3090BD449EA83 /* OverlayViewModel.swift */; };
 		C93CF8A12FCA2249A896524F /* ImageProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9D489EA1BE3291A3CF1184A /* ImageProcessor.swift */; };
 		CE989BAF083ACC89164FDBBD /* RuleEngineProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = B101A124C0ADCED0BED4C7BF /* RuleEngineProtocol.swift */; };
+		D5BD7C389A4AE32447FF25F7 /* SkeletonOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E8AD24F89282723F866FC94 /* SkeletonOverlay.swift */; };
 		D8CEEB9BFE892D4C85EF1B30 /* MockAIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BEDCA66F5BA4982A091438C /* MockAIClient.swift */; };
 		D8E05BB137FAA16B157B7071 /* PhotoScore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F2F7DA4451EA4883C968BB1 /* PhotoScore.swift */; };
 		DB7CF1462C409B380606C025 /* RuleEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75365869E71962F4983BB082 /* RuleEngineTests.swift */; };
@@ -105,6 +106,7 @@
 		6542E761E9B23DA93853CB51 /* RuleEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuleEngine.swift; sourceTree = "<group>"; };
 		6A6A3ADC6F86B2D0F90464BB /* PoseProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseProvider.swift; sourceTree = "<group>"; };
 		6C42116F111FF616CDDE2B94 /* CoreML.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreML.framework; path = System/Library/Frameworks/CoreML.framework; sourceTree = SDKROOT; };
+		6E8AD24F89282723F866FC94 /* SkeletonOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkeletonOverlay.swift; sourceTree = "<group>"; };
 		74FB001445B3ADDFF5FF20A0 /* VisionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionEngine.swift; sourceTree = "<group>"; };
 		75365869E71962F4983BB082 /* RuleEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuleEngineTests.swift; sourceTree = "<group>"; };
 		7BEDCA66F5BA4982A091438C /* MockAIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAIClient.swift; sourceTree = "<group>"; };
@@ -213,6 +215,7 @@
 				3A82A6AB14CCE523CA3E4BDD /* CoachingCard.swift */,
 				92B3FCF9A8F961B58E4338D2 /* CoachingOverlay.swift */,
 				5E0B55515BE1517515F256AF /* DirectionArrow.swift */,
+				6E8AD24F89282723F866FC94 /* SkeletonOverlay.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -688,6 +691,7 @@
 				237009E97EDE55EC197629DF /* SceneClassifierService.swift in Sources */,
 				EE21E1AA68F88DA10F749E83 /* SceneContext.swift in Sources */,
 				F02952368EC2DDD921B9D667 /* ScoreView.swift in Sources */,
+				D5BD7C389A4AE32447FF25F7 /* SkeletonOverlay.swift in Sources */,
 				7348BB68CBF9E271ADCF6CB8 /* Spacing.swift in Sources */,
 				A4EC0DEE4D29ABF343432A40 /* Typography.swift in Sources */,
 				DF206D990D1D90779057BA6C /* VisionEngine.swift in Sources */,

@@ -6,6 +6,7 @@ final class OverlayViewModel {
 
     var currentResponse: AICoachingResponse?
     var personDetected: Bool = false
+    var currentPose: PoseObservation?
 
     private(set) var lastResponse: AICoachingResponse?
 
@@ -19,6 +20,13 @@ final class OverlayViewModel {
 
     func updatePersonDetected(_ detected: Bool) {
         personDetected = detected
-        if !detected { currentResponse = nil }
+        if !detected {
+            currentResponse = nil
+            currentPose = nil
+        }
+    }
+
+    func updatePose(_ pose: PoseObservation?) {
+        currentPose = pose
     }
 }
