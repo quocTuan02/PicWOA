@@ -6,7 +6,7 @@ struct RuleEngine: RuleEngineProtocol {
         var issues: [CoachingRule] = []
 
         for rule in PoseRules.all {
-            if let triggered = rule.evaluate(pose: pose, scene: scene) {
+            if let triggered = rule.evaluate(pose, scene) {
                 issues.append(triggered)
             }
         }
