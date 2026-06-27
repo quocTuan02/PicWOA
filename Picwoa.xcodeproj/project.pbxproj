@@ -128,7 +128,7 @@
 		9B525A41F816934CCBAABFAF /* OpenAIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIClient.swift; sourceTree = "<group>"; };
 		9E3AF646130B550FB5092EA3 /* Photos.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Photos.framework; path = System/Library/Frameworks/Photos.framework; sourceTree = SDKROOT; };
 		A9D489EA1BE3291A3CF1184A /* ImageProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageProcessor.swift; sourceTree = "<group>"; };
-		AA5394CA37F289241FC999A4 /* Picwoa.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Picwoa.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA5394CA37F289241FC999A4 /* Picwoa.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Picwoa.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ABEC3EFCDA01BF4F2A6265D3 /* Spacing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Spacing.swift; sourceTree = "<group>"; };
 		AE738C81F908528DAAAEE8B8 /* PermissionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionView.swift; sourceTree = "<group>"; };
 		B101A124C0ADCED0BED4C7BF /* RuleEngineProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuleEngineProtocol.swift; sourceTree = "<group>"; };
@@ -604,8 +604,6 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1500;
-				TargetAttributes = {
-				};
 			};
 			buildConfigurationList = 626689D3522DA7C3A651CFB1 /* Build configuration list for PBXProject "Picwoa" */;
 			developmentRegion = en;
@@ -818,6 +816,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = H9N22J46J9;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Picwoa/Resources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -902,6 +901,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = H9N22J46J9;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Picwoa/Resources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
