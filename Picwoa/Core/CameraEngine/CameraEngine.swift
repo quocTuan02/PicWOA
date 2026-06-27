@@ -12,7 +12,10 @@ final class CameraEngine: NSObject, CameraBufferProvider, @unchecked Sendable {
     private let streamLock = NSLock()
     private var bufferContinuations: [UUID: AsyncStream<CMSampleBuffer>.Continuation] = [:]
     private var photoDelegate: PhotoCaptureDelegate?
+    private var captureDevice: AVCaptureDevice?
     private var isConfigured = false
+
+    static let maxZoomFactor: CGFloat = 5.0
 
     private override init() {
         super.init()
@@ -62,6 +65,18 @@ final class CameraEngine: NSObject, CameraBufferProvider, @unchecked Sendable {
                 self.photoDelegate = delegate
                 self.photoOutput.capturePhoto(with: settings, delegate: delegate)
             }
+        }
+    }
+
+    func setZoom(_ factor: CGFloat) {
+        sessionQueue.async { [weak self] in
+            guard let self, let device = self.captureDevice else { return }
+            do {
+                try device.lockForConfiguration()
+                let upper = min(device.maxAvailableVideoZoomFactor, CameraEngine.maxZoomFactor)
+                device.videoZoomFactor = max(device.minAvailableVideoZoomFactor, min(factor, upper))
+                device.unlockForConfiguration()
+            } catch { }
         }
     }
 
@@ -115,6 +130,7 @@ final class CameraEngine: NSObject, CameraBufferProvider, @unchecked Sendable {
         else {
             throw CameraError.deviceUnavailable
         }
+        captureDevice = device
 
         guard session.canAddInput(input) else {
             throw CameraError.configurationFailed
