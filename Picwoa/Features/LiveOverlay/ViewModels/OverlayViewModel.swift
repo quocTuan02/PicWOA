@@ -11,7 +11,7 @@ final class OverlayViewModel {
     private(set) var lastResponse: AICoachingResponse?
 
     var showOverlay: Bool { personDetected && currentResponse != nil }
-    var isReadyToCapture: Bool { currentResponse?.mainCue.contains("Chụp ngay") == true }
+    var isReadyToCapture: Bool { currentResponse?.isReadyToCapture == true }
 
     func update(with response: AICoachingResponse) {
         currentResponse = response

@@ -717,9 +717,9 @@
     "branch_strategy": "feature branches off main, short-lived (< 2 giờ)",
     "branches": [
       "main",
-      "feature/dev-a-camera",
-      "feature/dev-b-vision",
-      "feature/dev-c-ai"
+      "feature/camera",
+      "feature/vision",
+      "feature/ai-coaching"
     ],
     "merge_order": [
       {
