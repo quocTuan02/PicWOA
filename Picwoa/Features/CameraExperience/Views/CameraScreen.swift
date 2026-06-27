@@ -1,11 +1,19 @@
 import SwiftUI
 
 struct CameraScreen: View {
-    @State private var viewModel = CameraViewModel()
-    @State private var overlayViewModel = OverlayViewModel()
+    @State private var viewModel: CameraViewModel
+    @State private var overlayViewModel: OverlayViewModel
     @State private var capturedImage: UIImage?
     @State private var coachingResponse: AICoachingResponse?
     @State private var showReview = false
+
+    init(
+        viewModel: CameraViewModel = CameraViewModel(),
+        overlayViewModel: OverlayViewModel = OverlayViewModel()
+    ) {
+        _viewModel = State(initialValue: viewModel)
+        _overlayViewModel = State(initialValue: overlayViewModel)
+    }
 
     var body: some View {
         ZStack {

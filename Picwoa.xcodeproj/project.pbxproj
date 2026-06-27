@@ -36,6 +36,7 @@
 		70ACDE2C3F139655F5A0025A /* CameraEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = F48EAF6F00FEB07E53CDD57C /* CameraEngine.swift */; };
 		7348BB68CBF9E271ADCF6CB8 /* Spacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEC3EFCDA01BF4F2A6265D3 /* Spacing.swift */; };
 		77F2B96D01922B6FCD65D6F0 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 1C1577A64B2F39555DC5C9C0 /* Localizable.strings */; };
+		7F991EDFC8D0F18E24A101A7 /* AppCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05686A4861009A921868278D /* AppCoordinator.swift */; };
 		7F9D0D93766998AA52749BC5 /* PersonDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C6696F13EB84E8346DE33F7 /* PersonDetector.swift */; };
 		8791D9EAAED23382434E0B37 /* PoseObservation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D62B625B19797131803C30BA /* PoseObservation.swift */; };
 		89D92F8114DECA85076170D7 /* GlassCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BCD3A085F7518EB0AF8EB02 /* GlassCard.swift */; };
@@ -50,6 +51,7 @@
 		AA6AFA775F3269E1375A5601 /* ResponseParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4C5D57C4F03BA8B3035B693 /* ResponseParser.swift */; };
 		AC6357A01E8070925D888F85 /* CameraScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 480027F602E2D1AE2057C66C /* CameraScreen.swift */; };
 		AF65E676B3DADB62F6507AB2 /* CameraPermissionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C63527195C04317EFE1CD2E3 /* CameraPermissionManager.swift */; };
+		B0448787518EAE2CB03DCDC6 /* CaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48B164562250B35CFCEC06B5 /* CaptureService.swift */; };
 		B1CAEC587B11F41B1C103BD0 /* PoseDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F07AC31EC6D7C95B08F48B9 /* PoseDetector.swift */; };
 		B648AD9AFE1A41C193CB063D /* AICoachingResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04AA652A64C4748296F0F75A /* AICoachingResponse.swift */; };
 		B748898252C45327000C4220 /* AICoachingProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5053757485D4C2CC0CBE4852 /* AICoachingProvider.swift */; };
@@ -81,6 +83,7 @@
 /* Begin PBXFileReference section */
 		0481D7A1DB21F8EB0BD1BB06 /* PicwoaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicwoaApp.swift; sourceTree = "<group>"; };
 		04AA652A64C4748296F0F75A /* AICoachingResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AICoachingResponse.swift; sourceTree = "<group>"; };
+		05686A4861009A921868278D /* AppCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCoordinator.swift; sourceTree = "<group>"; };
 		117F74644814E13323B4EEFE /* CoachingRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoachingRule.swift; sourceTree = "<group>"; };
 		11FCF41F3CA3090BD449EA83 /* OverlayViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayViewModel.swift; sourceTree = "<group>"; };
 		1BCD3A085F7518EB0AF8EB02 /* GlassCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassCard.swift; sourceTree = "<group>"; };
@@ -91,6 +94,7 @@
 		3A82A6AB14CCE523CA3E4BDD /* CoachingCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoachingCard.swift; sourceTree = "<group>"; };
 		4696808B9E41550044ED91DE /* BeforeAfterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeforeAfterView.swift; sourceTree = "<group>"; };
 		480027F602E2D1AE2057C66C /* CameraScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraScreen.swift; sourceTree = "<group>"; };
+		48B164562250B35CFCEC06B5 /* CaptureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureService.swift; sourceTree = "<group>"; };
 		4E61288C59827AC1E557F3E9 /* CameraViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraViewModel.swift; sourceTree = "<group>"; };
 		4F2F7DA4451EA4883C968BB1 /* PhotoScore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoScore.swift; sourceTree = "<group>"; };
 		5053757485D4C2CC0CBE4852 /* AICoachingProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AICoachingProvider.swift; sourceTree = "<group>"; };
@@ -194,6 +198,7 @@
 			children = (
 				AABBEE6702E60F270C5AB333 /* CameraExperience */,
 				43D89EC31584DC05ED18A0EC /* LiveOverlay */,
+				5EBB3516F62A080094B3B812 /* PhotoCapture */,
 				3F8416CB4B15733C0DE124DB /* PhotoEditing */,
 				646FB94948D90BC7E86448A7 /* PhotoReview */,
 				6777D8A6AC95F408DB1DDA47 /* PoseCoaching */,
@@ -268,6 +273,14 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
+		5EBB3516F62A080094B3B812 /* PhotoCapture */ = {
+			isa = PBXGroup;
+			children = (
+				CEF02ECAE83C9B6B75922C0C /* Services */,
+			);
+			path = PhotoCapture;
+			sourceTree = "<group>";
+		};
 		646FB94948D90BC7E86448A7 /* PhotoReview */ = {
 			isa = PBXGroup;
 			children = (
@@ -315,6 +328,7 @@
 		7909E68C5FEE086FA51A199B /* App */ = {
 			isa = PBXGroup;
 			children = (
+				05686A4861009A921868278D /* AppCoordinator.swift */,
 				0481D7A1DB21F8EB0BD1BB06 /* PicwoaApp.swift */,
 			);
 			path = App;
@@ -417,6 +431,14 @@
 				75365869E71962F4983BB082 /* RuleEngineTests.swift */,
 			);
 			path = PicwoaTests;
+			sourceTree = "<group>";
+		};
+		CEF02ECAE83C9B6B75922C0C /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				48B164562250B35CFCEC06B5 /* CaptureService.swift */,
+			);
+			path = Services;
 			sourceTree = "<group>";
 		};
 		D03007D83BCC80344EEDB639 /* Services */ = {
@@ -625,6 +647,7 @@
 				1102A2C1E98BCCEAA6DE7170 /* AIOrchestrator.swift in Sources */,
 				BDAE3E302C8AF739AB230CBB /* AVFoundation+Sendable.swift in Sources */,
 				9AB21A5D11ADD428CF2682BB /* Animation.swift in Sources */,
+				7F991EDFC8D0F18E24A101A7 /* AppCoordinator.swift in Sources */,
 				9D592E757B0FC54085288900 /* BeforeAfterView.swift in Sources */,
 				9BD55CEF982C9F5C924304DF /* BottomToolbar.swift in Sources */,
 				10776037FBC9D1CA440FD629 /* CameraBufferProvider.swift in Sources */,
@@ -634,6 +657,7 @@
 				AC6357A01E8070925D888F85 /* CameraScreen.swift in Sources */,
 				14FAAB7FA1ADE9632529CC0E /* CameraViewModel.swift in Sources */,
 				0A182E710B46C75D3997EC8F /* CaptureButton.swift in Sources */,
+				B0448787518EAE2CB03DCDC6 /* CaptureService.swift in Sources */,
 				935643029AE8B32A718036AF /* CoachingCard.swift in Sources */,
 				58EB29D38B0DDD9022447681 /* CoachingOverlay.swift in Sources */,
 				5421A498530BA24FC3794EAA /* CoachingRule.swift in Sources */,
