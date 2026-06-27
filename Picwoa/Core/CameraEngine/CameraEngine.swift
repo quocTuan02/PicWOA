@@ -9,16 +9,12 @@ final class CameraEngine: NSObject, CameraBufferProvider, @unchecked Sendable {
     private let videoOutput = AVCaptureVideoDataOutput()
     private let sessionQueue = DispatchQueue(label: "com.picwoa.camera.session")
     private let bufferQueue = DispatchQueue(label: "com.picwoa.camera.buffer")
-    private let bufferContinuation: AsyncStream<CMSampleBuffer>.Continuation
+    private let streamLock = NSLock()
+    private var bufferContinuations: [UUID: AsyncStream<CMSampleBuffer>.Continuation] = [:]
     private var photoDelegate: PhotoCaptureDelegate?
     private var isConfigured = false
 
-    let sampleBufferStream: AsyncStream<CMSampleBuffer>
-
     private override init() {
-        let (stream, continuation) = AsyncStream<CMSampleBuffer>.makeStream()
-        sampleBufferStream = stream
-        bufferContinuation = continuation
         super.init()
     }
 
@@ -75,8 +71,34 @@ final class CameraEngine: NSObject, CameraBufferProvider, @unchecked Sendable {
         return layer
     }
 
+    nonisolated func makeSampleBufferStream() -> AsyncStream<CMSampleBuffer> {
+        AsyncStream { [weak self] continuation in
+            guard let self else {
+                continuation.finish()
+                return
+            }
+
+            let id = UUID()
+            self.streamLock.withLock {
+                self.bufferContinuations[id] = continuation
+            }
+            continuation.onTermination = { [weak self] _ in
+                self?.removeBufferContinuation(id)
+            }
+        }
+    }
+
     func didOutputSampleBuffer(_ buffer: CMSampleBuffer) {
-        bufferContinuation.yield(buffer)
+        let continuations = streamLock.withLock {
+            Array(bufferContinuations.values)
+        }
+        continuations.forEach { $0.yield(buffer) }
+    }
+
+    private func removeBufferContinuation(_ id: UUID) {
+        streamLock.withLock {
+            bufferContinuations[id] = nil
+        }
     }
 
     private func configureSessionIfNeeded() throws {
@@ -115,15 +137,15 @@ final class CameraEngine: NSObject, CameraBufferProvider, @unchecked Sendable {
         }
         session.addOutput(videoOutput)
 
-        if let connection = videoOutput.connection(with: .video), connection.isVideoOrientationSupported {
-            connection.videoOrientation = .portrait
-        }
-
-        if let connection = photoOutput.connection(with: .video), connection.isVideoOrientationSupported {
-            connection.videoOrientation = .portrait
-        }
+        setPortraitRotation(for: videoOutput.connection(with: .video))
+        setPortraitRotation(for: photoOutput.connection(with: .video))
 
         isConfigured = true
+    }
+
+    private func setPortraitRotation(for connection: AVCaptureConnection?) {
+        guard let connection, connection.isVideoRotationAngleSupported(90) else { return }
+        connection.videoRotationAngle = 90
     }
 }
 

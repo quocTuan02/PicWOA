@@ -7,6 +7,7 @@ final class CameraViewModel {
 
     var permissionStatus: CameraPermissionStatus = .notDetermined
     var isCapturing: Bool = false
+    var errorMessage: String?
 
     private let cameraEngine: CameraEngine
     private let permissionManager: CameraPermissionManager
@@ -28,7 +29,12 @@ final class CameraViewModel {
         await permissionManager.request()
         permissionStatus = permissionManager.status
         if permissionStatus == .granted {
-            try? await cameraEngine.startSession()
+            do {
+                try await cameraEngine.startSession()
+                errorMessage = nil
+            } catch {
+                errorMessage = "Không thể khởi động camera. Vui lòng thử lại."
+            }
         }
     }
 
@@ -36,7 +42,15 @@ final class CameraViewModel {
         guard !isCapturing else { return nil }
         isCapturing = true
         defer { isCapturing = false }
-        return try? await captureService.capture()
+
+        do {
+            let image = try await captureService.capture()
+            errorMessage = nil
+            return image
+        } catch {
+            errorMessage = "Không thể chụp ảnh. Vui lòng thử lại."
+            return nil
+        }
     }
 
     func openSettings() {

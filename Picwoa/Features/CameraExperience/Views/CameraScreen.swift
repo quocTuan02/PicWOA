@@ -44,6 +44,23 @@ struct CameraScreen: View {
                 PermissionView(type: .camera, onOpenSettings: viewModel.openSettings)
             }
         }
+        .alert(
+            "Camera error",
+            isPresented: Binding(
+                get: { viewModel.errorMessage != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        viewModel.errorMessage = nil
+                    }
+                }
+            )
+        ) {
+            Button("OK", role: .cancel) {
+                viewModel.errorMessage = nil
+            }
+        } message: {
+            Text(viewModel.errorMessage ?? "")
+        }
     }
 
     private func handleCapture() {

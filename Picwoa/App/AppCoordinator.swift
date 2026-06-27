@@ -35,7 +35,7 @@ final class AppCoordinator {
         hasStarted = true
 
         tasks.append(Task { [cameraEngine, visionEngine] in
-            for await buffer in cameraEngine.sampleBufferStream {
+            for await buffer in cameraEngine.makeSampleBufferStream() {
                 await visionEngine.process(sampleBuffer: buffer)
             }
         })
