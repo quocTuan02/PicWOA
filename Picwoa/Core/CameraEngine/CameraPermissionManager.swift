@@ -1,4 +1,5 @@
 import AVFoundation
+import UIKit
 
 enum CameraPermissionStatus {
     case notDetermined, granted, denied

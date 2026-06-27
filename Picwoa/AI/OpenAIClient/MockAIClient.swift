@@ -2,7 +2,7 @@ import Foundation
 
 final class MockAIClient: AIBackendProtocol, Sendable {
     private let responses: [AICoachingResponse]
-    private var index = 0
+    nonisolated(unsafe) private var index = 0
 
     init(responses: [AICoachingResponse] = MockAIClient.defaultResponses) {
         self.responses = responses

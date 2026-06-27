@@ -6,16 +6,14 @@ actor CameraEngine: CameraBufferProvider {
 
     private let session = AVCaptureSession()
     private var photoOutput = AVCapturePhotoOutput()
-    private var bufferContinuation: AsyncStream<CMSampleBuffer>.Continuation?
+    nonisolated private let bufferContinuation: AsyncStream<CMSampleBuffer>.Continuation
 
-    private(set) lazy var sampleBufferStream: AsyncStream<CMSampleBuffer> = {
-        AsyncStream { [weak self] continuation in
-            Task { await self?.setBufferContinuation(continuation) }
-        }
-    }()
+    nonisolated let sampleBufferStream: AsyncStream<CMSampleBuffer>
 
-    private func setBufferContinuation(_ continuation: AsyncStream<CMSampleBuffer>.Continuation) {
-        self.bufferContinuation = continuation
+    private init() {
+        let (stream, continuation) = AsyncStream<CMSampleBuffer>.makeStream()
+        sampleBufferStream = stream
+        bufferContinuation = continuation
     }
 
     func startSession() async throws {
@@ -28,7 +26,7 @@ actor CameraEngine: CameraBufferProvider {
 
     func stopSession() {
         session.stopRunning()
-        bufferContinuation?.finish()
+        bufferContinuation.finish()
     }
 
     func capturePhoto() async throws -> UIImage {
@@ -43,6 +41,6 @@ actor CameraEngine: CameraBufferProvider {
     }
 
     nonisolated func didOutputSampleBuffer(_ buffer: CMSampleBuffer) {
-        Task { await bufferContinuation?.yield(buffer) }
+        bufferContinuation.yield(buffer)
     }
 }
