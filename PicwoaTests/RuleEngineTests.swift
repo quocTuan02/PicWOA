@@ -118,3 +118,37 @@ final class RuleEngineTests: XCTestCase {
         XCTAssertEqual(priorities, priorities.sorted())
     }
 }
+
+final class PoseAnalysisServiceTests: XCTestCase {
+
+    func testAnalyzeComputesPoseAnalysisResult() {
+        let pose = PoseObservation(
+            head: CGPoint(x: 0.5, y: 0.54),
+            neck: CGPoint(x: 0.5, y: 0.60),
+            leftShoulder: CGPoint(x: 0.30, y: 0.68),
+            rightShoulder: CGPoint(x: 0.70, y: 0.62),
+            hip: CGPoint(x: 0.5, y: 0.82),
+            leftKnee: nil,
+            rightKnee: nil,
+            leftFoot: nil,
+            rightFoot: nil,
+            confidence: 0.95,
+            timestamp: 1
+        )
+
+        let result = PoseAnalysisService().analyze(pose)
+
+        XCTAssertNotNil(result)
+        XCTAssertEqual(result?.chinAngle ?? 0, -0.06, accuracy: 0.001)
+        XCTAssertEqual(result?.shoulderDelta ?? 0, 0.06, accuracy: 0.001)
+        XCTAssertEqual(result?.torsoWidth ?? 0, 0.40, accuracy: 0.001)
+        XCTAssertEqual(result?.frameCenterX ?? 0, 0.50, accuracy: 0.001)
+        XCTAssertEqual(result?.framePosition, "center")
+    }
+
+    func testAnalyzeReturnsNilWithoutShoulders() {
+        let result = PoseAnalysisService().analyze(.empty)
+
+        XCTAssertNil(result)
+    }
+}

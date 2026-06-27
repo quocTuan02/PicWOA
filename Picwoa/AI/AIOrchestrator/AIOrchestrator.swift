@@ -22,6 +22,10 @@ final class AIOrchestrator: AICoachingProvider {
     }
 
     func process(pose: PoseObservation, scene: SceneContext) async {
+        await process(pose: Optional(pose), scene: scene)
+    }
+
+    func process(pose: PoseObservation?, scene: SceneContext) async {
         let result = ruleEngine.evaluate(pose: pose, scene: scene)
 
         let fallbackResponse = makeFallbackResponse(from: result)
