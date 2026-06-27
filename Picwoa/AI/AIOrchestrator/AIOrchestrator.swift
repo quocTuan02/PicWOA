@@ -88,6 +88,10 @@ final class AIOrchestrator: AICoachingProvider {
     // MARK: - Direct entry (when the orchestrator runs the RuleEngine itself)
 
     func process(pose: PoseObservation, scene: SceneContext) async {
+        await process(pose: Optional(pose), scene: scene)
+    }
+
+    func process(pose: PoseObservation?, scene: SceneContext) async {
         let result = ruleEngine.evaluate(pose: pose, scene: scene)
         await ingest(result, scene: scene)
     }
