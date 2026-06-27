@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		023C6D521060292A3523F243 /* OpenAIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B525A41F816934CCBAABFAF /* OpenAIClient.swift */; };
-		09C21DF84C40A4A41A47F582 /* Config.plist in Resources */ = {isa = PBXBuildFile; fileRef = 7E6CC7886EF2005C5EC8DC4C /* Config.plist */; };
+		090919372D38D6CFC5EC3AA0 /* PromptBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3207A91B46202F31E100655F /* PromptBuilderTests.swift */; };
 		0A182E710B46C75D3997EC8F /* CaptureButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3B2038F63CEEA2CA7010EBE /* CaptureButton.swift */; };
 		10776037FBC9D1CA440FD629 /* CameraBufferProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E74F836556801295AA7208F /* CameraBufferProvider.swift */; };
 		107F57B23542A2CB19211077 /* CameraPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B11DBE43BF03F0723AD62E40 /* CameraPreviewView.swift */; };
@@ -17,9 +17,13 @@
 		15F59CD711529274BAAAF1F3 /* PicwoaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0481D7A1DB21F8EB0BD1BB06 /* PicwoaApp.swift */; };
 		1A3C9045A9F3AAC0B2320265 /* DirectionArrow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0B55515BE1517515F256AF /* DirectionArrow.swift */; };
 		1AC36C53FD8E0D415D8BB910 /* PromptBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB357710F936E7FCFD6F91A3 /* PromptBuilder.swift */; };
+		1C05E7B9AE1A187A9AB26FE8 /* ResponseValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4AE2098E1F91F382CECF06B /* ResponseValidator.swift */; };
 		1DCA4A02A776922934BFB6AB /* PoseProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A6A3ADC6F86B2D0F90464BB /* PoseProvider.swift */; };
+		1E35914CEBDDE5F0918BFBA3 /* ResponseValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDB00C591A9ECEDAA28C07FA /* ResponseValidatorTests.swift */; };
 		237009E97EDE55EC197629DF /* SceneClassifierService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 839DD560CEEF93FE7156F060 /* SceneClassifierService.swift */; };
 		23AB8BE0C6B1DFA49B2A2AD8 /* OpenAIRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 952A012CE2F810F36B737ACB /* OpenAIRequest.swift */; };
+		2C1A853312DD37CF6E3E36A9 /* PromptTemplates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03394D42B4EE6FB91D23B521 /* PromptTemplates.swift */; };
+		35BB297CA64D476F5FE32E44 /* AIOrchestratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7E9DDD590528A23FBB99518 /* AIOrchestratorTests.swift */; };
 		394A4AF3F2F08A09BE010BE8 /* ReviewViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A38AE6F6D811AE63715ABF5 /* ReviewViewModel.swift */; };
 		3987F65FC1D3CE07A91F7E29 /* Vision.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F195F017442FB07293EC86A /* Vision.framework */; };
 		3AC45B4B10899F3FE2F44513 /* ReviewScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E233AF1395927576EE467C13 /* ReviewScreen.swift */; };
@@ -33,6 +37,7 @@
 		60186219C89EB2E9CAB646DC /* RuleEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6542E761E9B23DA93853CB51 /* RuleEngine.swift */; };
 		683B340B0B23836F3B49DA06 /* AIBackendProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98BD0332AA316DC210524C92 /* AIBackendProtocol.swift */; };
 		69703D21EDEDA42EC1CB5965 /* PermissionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE738C81F908528DAAAEE8B8 /* PermissionView.swift */; };
+		6FDF7C395328305F6FE60BE9 /* OrchestratorMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88CEB29E262D3BBF7EECDD83 /* OrchestratorMetrics.swift */; };
 		70ACDE2C3F139655F5A0025A /* CameraEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = F48EAF6F00FEB07E53CDD57C /* CameraEngine.swift */; };
 		7348BB68CBF9E271ADCF6CB8 /* Spacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEC3EFCDA01BF4F2A6265D3 /* Spacing.swift */; };
 		77F2B96D01922B6FCD65D6F0 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 1C1577A64B2F39555DC5C9C0 /* Localizable.strings */; };
@@ -55,6 +60,7 @@
 		B1CAEC587B11F41B1C103BD0 /* PoseDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F07AC31EC6D7C95B08F48B9 /* PoseDetector.swift */; };
 		B648AD9AFE1A41C193CB063D /* AICoachingResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04AA652A64C4748296F0F75A /* AICoachingResponse.swift */; };
 		B748898252C45327000C4220 /* AICoachingProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5053757485D4C2CC0CBE4852 /* AICoachingProvider.swift */; };
+		BBE34D87837AB70E0B7E2089 /* AIConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68747DD2E0499DAA20601CFF /* AIConfig.swift */; };
 		BDAE3E302C8AF739AB230CBB /* AVFoundation+Sendable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90FA4553473316FA74B59D3D /* AVFoundation+Sendable.swift */; };
 		C5648C361D3DC342BF41F1D2 /* EditingRecipe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F173576AF8A2405242439E8 /* EditingRecipe.swift */; };
 		C6E2DED51640ECC7B3D2D59E /* OverlayViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FCF41F3CA3090BD449EA83 /* OverlayViewModel.swift */; };
@@ -82,6 +88,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		03394D42B4EE6FB91D23B521 /* PromptTemplates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptTemplates.swift; sourceTree = "<group>"; };
 		0481D7A1DB21F8EB0BD1BB06 /* PicwoaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PicwoaApp.swift; sourceTree = "<group>"; };
 		04AA652A64C4748296F0F75A /* AICoachingResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AICoachingResponse.swift; sourceTree = "<group>"; };
 		05686A4861009A921868278D /* AppCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCoordinator.swift; sourceTree = "<group>"; };
@@ -92,6 +99,7 @@
 		1D057B3ED04FC692B6380A97 /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = System/Library/Frameworks/CoreImage.framework; sourceTree = SDKROOT; };
 		2C6696F13EB84E8346DE33F7 /* PersonDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonDetector.swift; sourceTree = "<group>"; };
 		2F173576AF8A2405242439E8 /* EditingRecipe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditingRecipe.swift; sourceTree = "<group>"; };
+		3207A91B46202F31E100655F /* PromptBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptBuilderTests.swift; sourceTree = "<group>"; };
 		3A82A6AB14CCE523CA3E4BDD /* CoachingCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoachingCard.swift; sourceTree = "<group>"; };
 		4696808B9E41550044ED91DE /* BeforeAfterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeforeAfterView.swift; sourceTree = "<group>"; };
 		480027F602E2D1AE2057C66C /* CameraScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraScreen.swift; sourceTree = "<group>"; };
@@ -104,18 +112,19 @@
 		5C4346472B2FAEA9E28E354B /* BottomToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomToolbar.swift; sourceTree = "<group>"; };
 		5E0B55515BE1517515F256AF /* DirectionArrow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectionArrow.swift; sourceTree = "<group>"; };
 		6542E761E9B23DA93853CB51 /* RuleEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuleEngine.swift; sourceTree = "<group>"; };
+		68747DD2E0499DAA20601CFF /* AIConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIConfig.swift; sourceTree = "<group>"; };
 		6A6A3ADC6F86B2D0F90464BB /* PoseProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseProvider.swift; sourceTree = "<group>"; };
 		6C42116F111FF616CDDE2B94 /* CoreML.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreML.framework; path = System/Library/Frameworks/CoreML.framework; sourceTree = SDKROOT; };
 		6E8AD24F89282723F866FC94 /* SkeletonOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkeletonOverlay.swift; sourceTree = "<group>"; };
 		74FB001445B3ADDFF5FF20A0 /* VisionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionEngine.swift; sourceTree = "<group>"; };
 		75365869E71962F4983BB082 /* RuleEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuleEngineTests.swift; sourceTree = "<group>"; };
 		7BEDCA66F5BA4982A091438C /* MockAIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAIClient.swift; sourceTree = "<group>"; };
-		7E6CC7886EF2005C5EC8DC4C /* Config.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Config.plist; sourceTree = "<group>"; };
 		7E74F836556801295AA7208F /* CameraBufferProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraBufferProvider.swift; sourceTree = "<group>"; };
 		7F195F017442FB07293EC86A /* Vision.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Vision.framework; path = System/Library/Frameworks/Vision.framework; sourceTree = SDKROOT; };
 		82337C3110748AD5C2E6A92B /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		839DD560CEEF93FE7156F060 /* SceneClassifierService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneClassifierService.swift; sourceTree = "<group>"; };
 		864EB6E20F83BE8B2440F766 /* Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
+		88CEB29E262D3BBF7EECDD83 /* OrchestratorMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrchestratorMetrics.swift; sourceTree = "<group>"; };
 		8A38AE6F6D811AE63715ABF5 /* ReviewViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewViewModel.swift; sourceTree = "<group>"; };
 		8F07AC31EC6D7C95B08F48B9 /* PoseDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseDetector.swift; sourceTree = "<group>"; };
 		90FA4553473316FA74B59D3D /* AVFoundation+Sendable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AVFoundation+Sendable.swift"; sourceTree = "<group>"; };
@@ -133,6 +142,7 @@
 		AE738C81F908528DAAAEE8B8 /* PermissionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionView.swift; sourceTree = "<group>"; };
 		B101A124C0ADCED0BED4C7BF /* RuleEngineProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuleEngineProtocol.swift; sourceTree = "<group>"; };
 		B11DBE43BF03F0723AD62E40 /* CameraPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreviewView.swift; sourceTree = "<group>"; };
+		B4AE2098E1F91F382CECF06B /* ResponseValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResponseValidator.swift; sourceTree = "<group>"; };
 		C14D006DA2BECEF9255C70CC /* PicwoaTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PicwoaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C17C5F74732EC83463CE5C6E /* AIOrchestrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIOrchestrator.swift; sourceTree = "<group>"; };
 		C292DD8DF80649A6E708A339 /* PrimaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrimaryButton.swift; sourceTree = "<group>"; };
@@ -141,9 +151,11 @@
 		CB357710F936E7FCFD6F91A3 /* PromptBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptBuilder.swift; sourceTree = "<group>"; };
 		D4C5D57C4F03BA8B3035B693 /* ResponseParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResponseParser.swift; sourceTree = "<group>"; };
 		D62B625B19797131803C30BA /* PoseObservation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseObservation.swift; sourceTree = "<group>"; };
+		D7E9DDD590528A23FBB99518 /* AIOrchestratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIOrchestratorTests.swift; sourceTree = "<group>"; };
 		E07990348998FB5ABC909068 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		E10A2EB201965593AD001639 /* PoseAnalysisService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseAnalysisService.swift; sourceTree = "<group>"; };
 		E233AF1395927576EE467C13 /* ReviewScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewScreen.swift; sourceTree = "<group>"; };
+		EDB00C591A9ECEDAA28C07FA /* ResponseValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResponseValidatorTests.swift; sourceTree = "<group>"; };
 		F3B2038F63CEEA2CA7010EBE /* CaptureButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureButton.swift; sourceTree = "<group>"; };
 		F48EAF6F00FEB07E53CDD57C /* CameraEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraEngine.swift; sourceTree = "<group>"; };
 		F95E8BD4ED545692DC8897C8 /* Animation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Animation.swift; sourceTree = "<group>"; };
@@ -262,6 +274,7 @@
 			isa = PBXGroup;
 			children = (
 				CB357710F936E7FCFD6F91A3 /* PromptBuilder.swift */,
+				03394D42B4EE6FB91D23B521 /* PromptTemplates.swift */,
 			);
 			path = PromptBuilder;
 			sourceTree = "<group>";
@@ -362,6 +375,7 @@
 		987073377F7365AF367F4A4B /* OpenAIClient */ = {
 			isa = PBXGroup;
 			children = (
+				68747DD2E0499DAA20601CFF /* AIConfig.swift */,
 				7BEDCA66F5BA4982A091438C /* MockAIClient.swift */,
 				9B525A41F816934CCBAABFAF /* OpenAIClient.swift */,
 				952A012CE2F810F36B737ACB /* OpenAIRequest.swift */,
@@ -430,7 +444,10 @@
 		C3F437D8269D83B99A700609 /* PicwoaTests */ = {
 			isa = PBXGroup;
 			children = (
+				D7E9DDD590528A23FBB99518 /* AIOrchestratorTests.swift */,
 				C89FBAC1AA0979F5DAC091A7 /* MockAIClientTests.swift */,
+				3207A91B46202F31E100655F /* PromptBuilderTests.swift */,
+				EDB00C591A9ECEDAA28C07FA /* ResponseValidatorTests.swift */,
 				75365869E71962F4983BB082 /* RuleEngineTests.swift */,
 			);
 			path = PicwoaTests;
@@ -530,7 +547,6 @@
 		F70497E4F0241C1B7C2664AE /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				7E6CC7886EF2005C5EC8DC4C /* Config.plist */,
 				E07990348998FB5ABC909068 /* Info.plist */,
 				1C1577A64B2F39555DC5C9C0 /* Localizable.strings */,
 			);
@@ -551,7 +567,9 @@
 			isa = PBXGroup;
 			children = (
 				C17C5F74732EC83463CE5C6E /* AIOrchestrator.swift */,
+				88CEB29E262D3BBF7EECDD83 /* OrchestratorMetrics.swift */,
 				D4C5D57C4F03BA8B3035B693 /* ResponseParser.swift */,
+				B4AE2098E1F91F382CECF06B /* ResponseValidator.swift */,
 			);
 			path = AIOrchestrator;
 			sourceTree = "<group>";
@@ -630,7 +648,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				09C21DF84C40A4A41A47F582 /* Config.plist in Resources */,
 				77F2B96D01922B6FCD65D6F0 /* Localizable.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -645,6 +662,7 @@
 				683B340B0B23836F3B49DA06 /* AIBackendProtocol.swift in Sources */,
 				B748898252C45327000C4220 /* AICoachingProvider.swift in Sources */,
 				B648AD9AFE1A41C193CB063D /* AICoachingResponse.swift in Sources */,
+				BBE34D87837AB70E0B7E2089 /* AIConfig.swift in Sources */,
 				1102A2C1E98BCCEAA6DE7170 /* AIOrchestrator.swift in Sources */,
 				BDAE3E302C8AF739AB230CBB /* AVFoundation+Sendable.swift in Sources */,
 				9AB21A5D11ADD428CF2682BB /* Animation.swift in Sources */,
@@ -671,6 +689,7 @@
 				D8CEEB9BFE892D4C85EF1B30 /* MockAIClient.swift in Sources */,
 				023C6D521060292A3523F243 /* OpenAIClient.swift in Sources */,
 				23AB8BE0C6B1DFA49B2A2AD8 /* OpenAIRequest.swift in Sources */,
+				6FDF7C395328305F6FE60BE9 /* OrchestratorMetrics.swift in Sources */,
 				C6E2DED51640ECC7B3D2D59E /* OverlayViewModel.swift in Sources */,
 				69703D21EDEDA42EC1CB5965 /* PermissionView.swift in Sources */,
 				7F9D0D93766998AA52749BC5 /* PersonDetector.swift in Sources */,
@@ -683,7 +702,9 @@
 				FDB1E35594B7A1A74DEF68A1 /* PoseRules.swift in Sources */,
 				3D2E816BA213193F0310175A /* PrimaryButton.swift in Sources */,
 				1AC36C53FD8E0D415D8BB910 /* PromptBuilder.swift in Sources */,
+				2C1A853312DD37CF6E3E36A9 /* PromptTemplates.swift in Sources */,
 				AA6AFA775F3269E1375A5601 /* ResponseParser.swift in Sources */,
+				1C05E7B9AE1A187A9AB26FE8 /* ResponseValidator.swift in Sources */,
 				3AC45B4B10899F3FE2F44513 /* ReviewScreen.swift in Sources */,
 				394A4AF3F2F08A09BE010BE8 /* ReviewViewModel.swift in Sources */,
 				60186219C89EB2E9CAB646DC /* RuleEngine.swift in Sources */,
@@ -702,7 +723,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				35BB297CA64D476F5FE32E44 /* AIOrchestratorTests.swift in Sources */,
 				A081030C77BEA77E271FF30D /* MockAIClientTests.swift in Sources */,
+				090919372D38D6CFC5EC3AA0 /* PromptBuilderTests.swift in Sources */,
+				1E35914CEBDDE5F0918BFBA3 /* ResponseValidatorTests.swift in Sources */,
 				DB7CF1462C409B380606C025 /* RuleEngineTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

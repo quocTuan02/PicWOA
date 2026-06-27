@@ -6,6 +6,13 @@ struct RuleEngine: RuleEngineProtocol {
         evaluate(pose: PoseAnalysisService().analyze(pose), scene: scene)
     }
 
+    func evaluate(pose: PoseObservation?, scene: SceneContext) -> RuleEngineResult {
+        guard let pose else {
+            return evaluate(pose: Optional<PoseAnalysisResult>.none, scene: scene)
+        }
+        return evaluate(pose: pose, scene: scene)
+    }
+
     func evaluate(pose: PoseAnalysisResult, scene: SceneContext) -> RuleEngineResult {
         evaluate(pose: Optional(pose), scene: scene)
     }

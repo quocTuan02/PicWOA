@@ -20,9 +20,9 @@ struct CoreImageProcessor: ImageProcessor {
         // Contrast & Highlights & Shadows (via Tone Curve)
         let colorControls = CIFilter.colorControls()
         colorControls.inputImage = output
-        colorControls.contrast = CGFloat(clamp(1.0 + (recipe.contrast / 250.0), min: 0.85, max: 1.25))
+        colorControls.contrast = clamp(1.0 + (recipe.contrast / 250.0), min: 0.85, max: 1.25)
         colorControls.brightness = 0
-        colorControls.saturation = CGFloat(clamp(1.0 + (recipe.vibrance / 300.0), min: 0.9, max: 1.2))
+        colorControls.saturation = clamp(1.0 + (recipe.vibrance / 300.0), min: 0.9, max: 1.2)
         output = colorControls.outputImage ?? output
 
         // Temperature
@@ -34,8 +34,8 @@ struct CoreImageProcessor: ImageProcessor {
         // Highlights & Shadows
         let highlightFilter = CIFilter.highlightShadowAdjust()
         highlightFilter.inputImage = output
-        highlightFilter.highlightAmount = CGFloat(clamp(1.0 + (recipe.highlights / 300.0), min: 0.75, max: 1.15))
-        highlightFilter.shadowAmount = CGFloat(clamp(recipe.shadows / 250.0, min: -0.25, max: 0.35))
+        highlightFilter.highlightAmount = clamp(1.0 + (recipe.highlights / 300.0), min: 0.75, max: 1.15)
+        highlightFilter.shadowAmount = clamp(recipe.shadows / 250.0, min: -0.25, max: 0.35)
         output = highlightFilter.outputImage ?? output
 
         guard let cgImage = context.createCGImage(output, from: output.extent) else { return image }
