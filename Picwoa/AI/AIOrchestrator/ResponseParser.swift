@@ -30,13 +30,26 @@ struct ResponseParser {
             vibrance:    (recipeJson["vibrance"]    as? Double).map(Float.init) ?? 0
         )
 
+        let overlay = (json["overlay"] as? [[String: Any]] ?? []).compactMap { item -> OverlayCue? in
+            guard let part = item["part"] as? String,
+                  let direction = item["direction"] as? String else { return nil }
+            return OverlayCue(part: part, type: item["type"] as? String ?? "arrow", direction: direction)
+        }
+
+        // The LLM may return score as 4, 4.0, or "4" — accept all three, default to 3.
+        let score = (json["score"] as? Int)
+            ?? (json["score"] as? Double).map(Int.init)
+            ?? (json["score"] as? String).flatMap(Int.init)
+            ?? 3
+
         return AICoachingResponse(
             mainCue:            mainCue,
             secondaryCue:       json["secondary_cue"]     as? String,
             cameraInstruction:  json["camera_instruction"] as? String,
-            score:              (json["score"] as? Int) ?? 3,
+            score:              score,
             feedback:           (json["feedback"] as? String) ?? "",
-            editingRecipe:      recipe
+            editingRecipe:      recipe,
+            overlay:            overlay
         )
     }
 }

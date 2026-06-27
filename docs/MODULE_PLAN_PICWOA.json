@@ -521,9 +521,9 @@
     "branch_strategy": "feature branches off main, short-lived (< 2 giờ)",
     "branches": [
       "main",
-      "feature/dev-a-camera",
-      "feature/dev-b-vision",
-      "feature/dev-c-ai"
+      "feature/camera",
+      "feature/vision",
+      "feature/ai-coaching"
     ],
     "merge_order": [
       { "order": 1, "module": "MOD-00 DesignSystem", "reason": "Tất cả modules depend on này", "merge_at": "00:30" },

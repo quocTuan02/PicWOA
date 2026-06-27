@@ -20,7 +20,8 @@ final class AppCoordinator {
         visionEngine: VisionEngine = .shared,
         ruleEngine: RuleEngine = RuleEngine(),
         sceneClassifier: SceneClassifierService = SceneClassifierService(),
-        aiBackend: any AIBackendProtocol = MockAIClient()
+        // Honor Config.plist: real OpenAI when a key is set, otherwise safe MockAIClient.
+        aiBackend: any AIBackendProtocol = AIConfig.makeBackend()
     ) {
         self.cameraEngine = cameraEngine
         self.visionEngine = visionEngine
@@ -39,22 +40,22 @@ final class AppCoordinator {
         hasStarted = true
 
         tasks.append(Task { [cameraEngine, visionEngine, sceneClassifier, sceneStore] in
-            var lastSceneClassification = Date.distantPast
-
+            var frame = 0
             for await buffer in cameraEngine.makeSampleBufferStream() {
+                // Classify scene ~once/sec BEFORE handing the buffer to the Vision actor
+                // (after the actor call the buffer is "sent" and can't be touched again).
+                frame += 1
+                if frame % 30 == 0 {
+                    let scene = sceneClassifier.classifySynchronously(buffer)
+                    await sceneStore.update(scene)
+                }
                 await visionEngine.process(sampleBuffer: buffer)
-
-                let now = Date()
-                guard now.timeIntervalSince(lastSceneClassification) >= 5 else { continue }
-                lastSceneClassification = now
-
-                let scene = await sceneClassifier.classify(buffer)
-                await sceneStore.update(scene)
             }
         })
 
         tasks.append(Task { [visionEngine, orchestrator, sceneStore] in
             for await pose in visionEngine.poseStream {
+                guard let pose else { continue }
                 let scene = await sceneStore.current()
                 await orchestrator.process(pose: pose, scene: scene)
             }

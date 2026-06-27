@@ -16,7 +16,7 @@ struct CoachingOverlay: View {
             } else if viewModel.showOverlay, let response = viewModel.currentResponse {
                 CoachingCard(
                     message: response.mainCue,
-                    direction: nil,
+                    direction: response.primaryDirection,
                     isReady: viewModel.isReadyToCapture
                 )
                 .padding(.bottom, 100)

@@ -25,9 +25,13 @@ targets:
         excludes:
           - "**/*.md"
           - "**/*.template"
+          - "Resources/Config.plist"
     resources:
       - path: Picwoa/Resources/Assets.xcassets
       - path: Picwoa/Resources/Localizable.strings
+      # Settings AI (gitignored) — optional để máy chưa có file vẫn build (AIConfig fallback mock).
+      - path: Picwoa/Resources/Config.plist
+        optional: true
     info:
       path: Picwoa/Resources/Info.plist
       properties:

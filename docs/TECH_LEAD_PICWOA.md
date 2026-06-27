@@ -103,9 +103,9 @@
 
 ```
 main                          ← production-ready at all times
-├── feature/dev-a-camera      ← Dev A: Camera + AppCoordinator
-├── feature/dev-b-vision      ← Dev B: Vision + RuleEngine
-└── feature/dev-c-ai          ← Dev C: AI + Overlay + Review
+├── feature/camera      ← Dev A: Camera + AppCoordinator
+├── feature/vision      ← Dev B: Vision + RuleEngine
+└── feature/ai-coaching          ← Dev C: AI + Overlay + Review
 ```
 
 ### Branch Rules
@@ -196,8 +196,8 @@ CameraExperience (Dev A, 01:25)     RuleEngine (Dev B, 02:00)
 | Người | Việc làm |
 |-------|---------|
 | **Dev A** | Tạo Xcode project (SwiftUI, iOS 17+, Swift 6) → tạo 3 feature branches → build shared domain models → commit vào `main` → tạo `Config.plist.template` |
-| **Dev B** | Clone repo → checkout `feature/dev-b-vision` → pull shared models → setup `Core/VisionEngine/` skeleton → đọc Vision Framework API |
-| **Dev C** | Clone repo → checkout `feature/dev-c-ai` → pull shared models → setup `AI/` folder skeleton → chuẩn bị prompt template |
+| **Dev B** | Clone repo → checkout `feature/vision` → pull shared models → setup `Core/VisionEngine/` skeleton → đọc Vision Framework API |
+| **Dev C** | Clone repo → checkout `feature/ai-coaching` → pull shared models → setup `AI/` folder skeleton → chuẩn bị prompt template |
 
 **Checkpoint 00:30:** `⌘B` pass trên cả 3 máy, shared models có mặt.
 
@@ -231,7 +231,7 @@ CameraExperience (Dev A, 01:25)     RuleEngine (Dev B, 02:00)
 
 | Người | Việc làm |
 |-------|---------|
-| **Dev A** | Merge `feature/dev-b-vision` và `feature/dev-c-ai` vào `main` → resolve conflicts (nếu có) → wire `AppCoordinator` |
+| **Dev A** | Merge `feature/vision` và `feature/ai-coaching` vào `main` → resolve conflicts (nếu có) → wire `AppCoordinator` |
 | **Dev B** | Hỗ trợ Dev A resolve conflicts phần Vision → test VisionEngine với camera thật trong integrated build |
 | **Dev C** | Test LiveOverlay với real camera feed → test ReviewScreen với real capture → swap MockAI → real OpenAI nếu có API key |
 
