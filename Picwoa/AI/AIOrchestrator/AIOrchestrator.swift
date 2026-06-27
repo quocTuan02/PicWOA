@@ -1,53 +1,165 @@
 import Foundation
 
+/// Coordinates the entire AI pipeline — throttle, cache, fallback, validate.
+/// Every `RuleEngineResult` goes through the decision engine per AI_ORCHESTRATION_SPEC §2.
+///
+/// UX: always emit the RuleEngine fallback IMMEDIATELY (zero latency); the AI response
+/// arrives later and overrides it. The app never waits on a blank screen or crashes because of AI.
 @MainActor
 final class AIOrchestrator: AICoachingProvider {
 
+    // Dependencies
     private let backend: any AIBackendProtocol
     private let ruleEngine: RuleEngine
-    private let throttleInterval: TimeInterval = 3.0
+    private let config: AIConfig
 
+    // Throttle + cache state
     private var lastRequestTime: Date = .distantPast
     private var cachedResponse: AICoachingResponse?
+    private var cachedAt: Date = .distantPast
+    private var previousResult: RuleEngineResult?
 
-    private var coachingContinuation: AsyncStream<AICoachingResponse>.Continuation?
+    // Observability (debug)
+    private(set) var lastMetrics: OrchestratorMetrics?
 
-    private(set) lazy var coachingStream: AsyncStream<AICoachingResponse> = {
-        AsyncStream { [weak self] continuation in
-            self?.coachingContinuation = continuation
-        }
-    }()
+    // Output stream
+    let coachingStream: AsyncStream<AICoachingResponse>
+    private let continuation: AsyncStream<AICoachingResponse>.Continuation
 
-    init(backend: any AIBackendProtocol = MockAIClient(), ruleEngine: RuleEngine = RuleEngine()) {
-        self.backend = backend
+    // Stream-driven tasks (when using start(ruleStream:sceneStream:))
+    private var streamTasks: [Task<Void, Never>] = []
+    private var latestScene: SceneContext = .unknown
+
+    init(
+        config: AIConfig = .load(),
+        backend: (any AIBackendProtocol)? = nil,
+        ruleEngine: RuleEngine = RuleEngine()
+    ) {
+        self.config = config
+        self.backend = backend ?? AIConfig.makeBackend(config: config)
         self.ruleEngine = ruleEngine
+        // bufferingNewest(1): the overlay only needs the latest coaching; avoids a
+        // backlog of stale responses if the UI consumes slower than the emit rate (real-time path).
+        (coachingStream, continuation) = AsyncStream.makeStream(
+            of: AICoachingResponse.self,
+            bufferingPolicy: .bufferingNewest(1)
+        )
     }
+
+    // MARK: - Stream-driven entry (integration with Dev B)
+
+    /// Subscribe to the RuleEngine + Scene streams. AppCoordinator calls this after wiring the pipeline.
+    func start(
+        ruleStream: AsyncStream<RuleEngineResult>,
+        sceneStream: AsyncStream<SceneContext>
+    ) {
+        stop()
+        streamTasks.append(Task { [weak self] in
+            for await scene in sceneStream {
+                self?.latestScene = scene
+            }
+        })
+        streamTasks.append(Task { [weak self] in
+            for await result in ruleStream {
+                guard let self else { return }
+                await self.ingest(result, scene: self.latestScene)
+            }
+        })
+    }
+
+    func stop() {
+        streamTasks.forEach { $0.cancel() }
+        streamTasks.removeAll()
+    }
+
+    /// Reset the cache when the user captures — AI_ORCHESTRATION_SPEC §8.
+    func resetSessionCache() {
+        cachedResponse = nil
+        cachedAt = .distantPast
+        previousResult = nil
+        lastRequestTime = .distantPast
+    }
+
+    // MARK: - Direct entry (when the orchestrator runs the RuleEngine itself)
 
     func process(pose: PoseObservation, scene: SceneContext) async {
         let result = ruleEngine.evaluate(pose: pose, scene: scene)
+        await ingest(result, scene: scene)
+    }
 
-        // Emit Rule Engine result immediately (offline, no latency)
-        let fallbackResponse = makeFallbackResponse(from: result)
-        emit(fallbackResponse)
+    // MARK: - Decision engine
 
-        // Throttle AI calls
-        guard Date().timeIntervalSince(lastRequestTime) >= throttleInterval else { return }
-        guard !result.issues.isEmpty else { return }
+    private func ingest(_ result: RuleEngineResult, scene: SceneContext) async {
+        let startedAt = Date()
 
+        // Tier 3 — emit the RuleEngine result IMMEDIATELY (zero latency UX).
+        emit(makeFallbackResponse(from: result))
+
+        // Path B — no more issues → STOP, don't call AI.
+        if result.readyToCapture {
+            finish(.ruleEngineClean, since: startedAt, cacheHit: false, issues: result.issues.count)
+            return
+        }
+
+        // Throttle + cache invalidation.
+        let throttleElapsed = Date().timeIntervalSince(lastRequestTime) >= config.throttleSeconds
+        let invalidated = previousResult.map { shouldInvalidateCache(current: result, previous: $0) } ?? true
+        previousResult = result
+
+        // Path C — within the throttle window and issues haven't changed much → use cached.
+        guard throttleElapsed || invalidated else {
+            if let cached = freshCachedResponse() { emit(cached) }
+            finish(.ruleEngineThrottle, since: startedAt, cacheHit: cachedResponse != nil, issues: result.issues.count)
+            return
+        }
+
+        // Path D — call AI.
+        // TRADEOFF (accepted for MVP): `await backend.send` runs sequentially inside
+        // the ruleStream `for await` loop, so if the network is slow (up to ~timeout×2 due
+        // to retries) new rule results are held back until this call finishes → coaching
+        // can be delayed by a few seconds. Mitigated by: (1) the Tier-3 fallback is emitted
+        // IMMEDIATELY at the top of the function, (2) the 3s throttle caps it at 1 call/3s. V1:
+        // move the network into a separate Task so the loop keeps consuming. NOT changing this
+        // for the MVP because it would break the cache/throttle write ordering that @MainActor serializes.
         lastRequestTime = Date()
         let request = OpenAIRequest(from: result, scene: scene)
 
         do {
             let response = try await backend.send(request)
+            guard ResponseValidator.validate(response) else {
+                emit(bestAvailableResponse(aiResponse: nil, ruleResult: result))
+                finish(.aiError, since: startedAt, cacheHit: false, issues: result.issues.count, reason: "invalid_response")
+                return
+            }
             cachedResponse = response
+            cachedAt = Date()
             emit(response)
+            finish(.aiSuccess, since: startedAt, cacheHit: false, issues: result.issues.count)
         } catch {
-            // Fallback: already emitted above
+            // Path E — timeout / error → bestAvailable (cached < 30s or rule).
+            emit(bestAvailableResponse(aiResponse: nil, ruleResult: result))
+            let path: DecisionPath = isTimeout(error) ? .aiTimeout : .aiError
+            finish(path, since: startedAt, cacheHit: freshCachedResponse() != nil, issues: result.issues.count, reason: "\(error)")
         }
     }
 
-    private func emit(_ response: AICoachingResponse) {
-        coachingContinuation?.yield(response)
+    // MARK: - Fallback tiers (§6)
+
+    /// Tier 1 AI(valid) → Tier 2 cached(<30s) → Tier 3 RuleEngine.
+    private func bestAvailableResponse(
+        aiResponse: AICoachingResponse?,
+        ruleResult: RuleEngineResult
+    ) -> AICoachingResponse {
+        if let ai = aiResponse, ResponseValidator.validate(ai) { return ai }
+        if let cached = freshCachedResponse() { return cached }
+        return makeFallbackResponse(from: ruleResult)
+    }
+
+    private func freshCachedResponse() -> AICoachingResponse? {
+        guard let cached = cachedResponse,
+              Date().timeIntervalSince(cachedAt) < config.cacheTTLSeconds
+        else { return nil }
+        return cached
     }
 
     private func makeFallbackResponse(from result: RuleEngineResult) -> AICoachingResponse {
@@ -58,17 +170,63 @@ final class AIOrchestrator: AICoachingProvider {
                 cameraInstruction: nil,
                 score: 5,
                 feedback: "Tư thế hoàn hảo!",
-                editingRecipe: cachedResponse?.editingRecipe ?? .neutral
+                editingRecipe: cachedResponse?.editingRecipe ?? .neutral,
+                isReadyToCapture: true
             )
         }
         let topIssue = result.issues.first
+        let overlay = result.issues.compactMap { rule -> OverlayCue? in
+            guard let direction = rule.direction else { return nil }
+            return OverlayCue(part: rule.id, type: "arrow", direction: direction.rawValue)
+        }
         return AICoachingResponse(
             mainCue: topIssue?.message ?? "Điều chỉnh tư thế",
             secondaryCue: result.issues.dropFirst().first?.message,
             cameraInstruction: nil,
             score: max(1, 5 - result.issues.count),
             feedback: "Hãy điều chỉnh theo hướng dẫn.",
-            editingRecipe: cachedResponse?.editingRecipe ?? .neutral
+            editingRecipe: cachedResponse?.editingRecipe ?? .neutral,
+            overlay: overlay
         )
+    }
+
+    // MARK: - Cache invalidation (§8)
+
+    func shouldInvalidateCache(current: RuleEngineResult, previous: RuleEngineResult) -> Bool {
+        let currentIDs = Set(current.issues.map(\.id))
+        let previousIDs = Set(previous.issues.map(\.id))
+        return currentIDs.symmetricDifference(previousIDs).count > 1
+    }
+
+    // MARK: - Helpers
+
+    private func emit(_ response: AICoachingResponse) {
+        continuation.yield(response)
+    }
+
+    private func isTimeout(_ error: Error) -> Bool {
+        if case OpenAIError.timeout = error { return true }
+        if let urlError = error as? URLError, urlError.code == .timedOut { return true }
+        return false
+    }
+
+    private func finish(
+        _ path: DecisionPath,
+        since startedAt: Date,
+        cacheHit: Bool,
+        issues: Int,
+        reason: String? = nil
+    ) {
+        let metrics = OrchestratorMetrics(
+            decisionPath: path,
+            executionTimeMs: Date().timeIntervalSince(startedAt) * 1000,
+            cacheHit: cacheHit,
+            ruleEngineIssueCount: issues,
+            failureReason: reason
+        )
+        lastMetrics = metrics
+        #if DEBUG
+        metrics.log()
+        #endif
     }
 }
