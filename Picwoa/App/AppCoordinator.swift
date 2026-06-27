@@ -17,7 +17,8 @@ final class AppCoordinator {
         cameraEngine: CameraEngine = .shared,
         visionEngine: VisionEngine = .shared,
         ruleEngine: RuleEngine = RuleEngine(),
-        aiBackend: any AIBackendProtocol = MockAIClient()
+        // Honor Config.plist: real OpenAI when a key is set, otherwise safe MockAIClient.
+        aiBackend: any AIBackendProtocol = AIConfig.makeBackend()
     ) {
         self.cameraEngine = cameraEngine
         self.visionEngine = visionEngine
