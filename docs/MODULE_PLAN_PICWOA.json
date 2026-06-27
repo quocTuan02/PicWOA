@@ -50,7 +50,7 @@
         "CameraEngine.shared",
         "func startSession() async throws",
         "func stopSession()",
-        "var sampleBufferStream: AsyncStream<CMSampleBuffer>",
+        "func makeSampleBufferStream() -> AsyncStream<CMSampleBuffer>  // multicast: mỗi consumer (VisionEngine, SceneAnalysis) một stream riêng",
         "func capturePhoto() async throws -> UIImage",
         "var permissionStatus: CameraPermissionStatus"
       ],
@@ -61,7 +61,7 @@
       "can_build_independently": true,
       "can_build_in_parallel": true,
       "merge_risks": "Medium — shared singleton, cần đảm bảo thread safety",
-      "integration_notes": "VisionEngine subscribe vào sampleBufferStream. CameraExperience consume preview layer. Dùng actor để protect shared state."
+      "integration_notes": "VisionEngine VÀ SceneAnalysis mỗi bên gọi makeSampleBufferStream() để có stream riêng (broadcast tới nhiều consumer — KHÔNG dùng chung một AsyncStream vì AsyncStream chỉ phục vụ 1 consumer). CameraExperience consume preview layer. Dùng actor để protect shared state. Cần NSCameraUsageDescription (tiếng Việt) trong Info.plist — thiếu sẽ crash khi xin quyền."
     },
 
     {
@@ -83,12 +83,12 @@
       ],
       "inputs": "CameraEngine (preview), OverlayViewModel (coaching state)",
       "outputs": "User action: capture trigger, navigation to Review",
-      "dependencies": ["MOD-00", "MOD-01", "MOD-06 (LiveOverlay — for overlay UI)"],
+      "dependencies": ["MOD-00", "MOD-01", "MOD-10 (LiveOverlay — for overlay UI)"],
       "folder_ownership": "Features/CameraExperience/",
       "can_build_independently": false,
       "can_build_in_parallel": true,
       "merge_risks": "Low — UI layer, conflict chủ yếu ở navigation setup",
-      "integration_notes": "Nhận CoachingOverlay từ MOD-06 dưới dạng ZStack overlay. NavigationCoordinator handle push to ReviewScreen."
+      "integration_notes": "Nhận CoachingOverlay từ MOD-10 dưới dạng ZStack overlay (inject qua protocol/closure để Dev A build với stub khi MOD-10 của Dev C chưa sẵn — tránh bị block). NavigationCoordinator handle push to ReviewScreen."
     },
 
     {
@@ -98,7 +98,7 @@
       "owner": "Dev B",
       "purpose": "Wrap Apple Vision Framework — person detection + pose detection từ camera feed",
       "responsibilities": [
-        "Subscribe CMSampleBuffer từ CameraEngine",
+        "Subscribe CMSampleBuffer từ CameraEngine.makeSampleBufferStream() (stream riêng của VisionEngine)",
         "Chạy VNDetectHumanBodyPoseRequest",
         "Parse VNHumanBodyPoseObservation thành domain PoseObservation",
         "Emit PersonDetected boolean",
@@ -109,9 +109,9 @@
         "var poseStream: AsyncStream<PoseObservation?>",
         "var personDetectedStream: AsyncStream<Bool>"
       ],
-      "inputs": "CMSampleBuffer từ CameraEngine.sampleBufferStream",
+      "inputs": "CMSampleBuffer từ CameraEngine.makeSampleBufferStream()",
       "outputs": "PoseObservation (≥15 FPS), Bool personDetected",
-      "dependencies": ["Vision Framework", "MOD-01 (CameraEngine — sampleBufferStream)"],
+      "dependencies": ["Vision Framework", "MOD-01 (CameraEngine — makeSampleBufferStream())"],
       "folder_ownership": "Core/VisionEngine/",
       "can_build_independently": false,
       "can_build_in_parallel": true,
@@ -129,12 +129,13 @@
         "Consume PoseObservation từ VisionEngine",
         "Tính toán angles và relative positions giữa landmarks",
         "Phát hiện ChinDown, ShoulderImbalance, TorsoFacingCamera, FramePosition",
+        "Là nơi tính framePosition của người trong khung hình, đặt vào PoseAnalysisResult.framePosition (RuleEngine sẽ forward field này lên RuleEngineResult)",
         "Expose PoseAnalysisResult cho RuleEngine và AIOrchestrator"
       ],
       "public_apis": [
         "PoseAnalysisService",
         "func analyze(_ pose: PoseObservation) -> PoseAnalysisResult",
-        "struct PoseAnalysisResult { chinAngle, shoulderDelta, torsoAngle, framePosition }"
+        "// PoseObservation, PoseAnalysisResult định nghĩa trong MOD-15 SharedKernel"
       ],
       "inputs": "PoseObservation từ VisionEngine",
       "outputs": "PoseAnalysisResult",
@@ -153,7 +154,7 @@
       "owner": "Dev B",
       "purpose": "Phân loại scene (indoor/outdoor) từ camera frame",
       "responsibilities": [
-        "Sample camera frame định kỳ (1 frame/5 giây đủ dùng)",
+        "Sample camera frame định kỳ (1 frame/5 giây đủ dùng) từ stream riêng qua CameraEngine.makeSampleBufferStream()",
         "Classify indoor vs outdoor",
         "MVP: dùng luminance heuristic hoặc CoreML classifier đơn giản",
         "Expose SceneContext cho AI payload"
@@ -161,16 +162,16 @@
       "public_apis": [
         "SceneClassifierService",
         "func classify(_ sampleBuffer: CMSampleBuffer) async -> SceneContext",
-        "enum SceneContext { indoor, outdoor, unknown }"
+        "// SceneContext định nghĩa trong MOD-15 SharedKernel"
       ],
-      "inputs": "CMSampleBuffer",
+      "inputs": "CMSampleBuffer từ CameraEngine.makeSampleBufferStream() (stream RIÊNG, không share với VisionEngine)",
       "outputs": "SceneContext",
-      "dependencies": ["MOD-01 (CameraEngine)"],
+      "dependencies": ["MOD-01 (CameraEngine — makeSampleBufferStream())"],
       "folder_ownership": "Features/SceneAnalysis/",
-      "can_build_independently": true,
+      "can_build_independently": false,
       "can_build_in_parallel": true,
       "merge_risks": "Low",
-      "integration_notes": "Nếu không có CoreML model kịp — default outdoor, không block MVP."
+      "integration_notes": "Là consumer THỨ HAI của camera frame: gọi CameraEngine.makeSampleBufferStream() để lấy AsyncStream RIÊNG (multicast — KHÔNG dùng chung stream với VisionEngine vì một AsyncStream chỉ phục vụ 1 consumer). Nếu không có CoreML model kịp — default outdoor, không block MVP."
     },
 
     {
@@ -184,19 +185,19 @@
         "Evaluate 8 rules (chin, shoulders, torso, position, distance)",
         "Ưu tiên rule quan trọng nhất",
         "Emit [CoachingRule] — danh sách vấn đề",
-        "Emit ReadyToCapture khi không còn vấn đề"
+        "Emit ReadyToCapture khi không còn vấn đề",
+        "Lấy framePosition từ PoseAnalysisResult.framePosition và đẩy vào RuleEngineResult.framePosition (để AIOrchestrator/PromptBuilder dùng)"
       ],
       "public_apis": [
         "RuleEngine",
         "func evaluate(pose: PoseAnalysisResult, scene: SceneContext) -> RuleEngineResult",
-        "struct RuleEngineResult { issues: [CoachingRule], readyToCapture: Bool }",
-        "struct CoachingRule { id, message: String, direction: Direction?, priority: Int }"
+        "// RuleEngineResult (gồm framePosition), CoachingRule, Direction định nghĩa trong MOD-15 SharedKernel"
       ],
       "inputs": "PoseAnalysisResult, SceneContext",
       "outputs": "RuleEngineResult (< 10ms)",
       "dependencies": ["MOD-04 (PoseCoaching)", "MOD-05 (SceneAnalysis)"],
       "folder_ownership": "AI/RuleEngine/",
-      "can_build_independently": true,
+      "can_build_independently": false,
       "can_build_in_parallel": true,
       "merge_risks": "Low — pure logic, không có side effects",
       "integration_notes": "Không có network. Unit test toàn bộ rules với mock inputs. Fallback chính khi AI unavailable."
@@ -222,7 +223,7 @@
       "outputs": "OpenAIRequest",
       "dependencies": ["MOD-06 (RuleEngine)"],
       "folder_ownership": "AI/PromptBuilder/",
-      "can_build_independently": true,
+      "can_build_independently": false,
       "can_build_in_parallel": true,
       "merge_risks": "Low",
       "integration_notes": "Có thể build + unit test hoàn toàn offline với mock data. Prompt template phải enforce tiếng Việt output."
@@ -253,7 +254,7 @@
       "can_build_independently": true,
       "can_build_in_parallel": true,
       "merge_risks": "Low",
-      "integration_notes": "API key trong Config.plist, file này trong .gitignore. MockAIClient return canned response trong 0.3s để simulate latency."
+      "integration_notes": "API key trong Config.plist, file này trong .gitignore. MockAIClient return canned response trong 0.3s để simulate latency. ResponseParser map JSON snake_case từ OpenAI (main_cue, secondary_cue, camera_instruction, editing_recipe) → AICoachingResponse (camelCase) theo SPECIFICATION; AICoachingResponse định nghĩa trong MOD-15 SharedKernel."
     },
 
     {
@@ -265,6 +266,7 @@
       "responsibilities": [
         "Subscribe RuleEngine output",
         "Throttle AI calls: 1 request / 3 giây",
+        "Trích framePosition từ RuleEngineResult và truyền vào PromptBuilder.build(...) (đóng vòng dữ liệu framePosition trước đây thiếu nguồn)",
         "Gọi PromptBuilder → OpenAIClient",
         "Cache last valid AICoachingResponse",
         "Fallback sang RuleEngine khi AI fail/timeout",
@@ -306,12 +308,12 @@
       ],
       "inputs": "AICoachingResponse, RuleEngineResult, PersonDetected bool",
       "outputs": "SwiftUI View injected vào CameraScreen",
-      "dependencies": ["MOD-00 (DesignSystem)", "MOD-06 (RuleEngine)", "MOD-09 (AIOrchestrator)"],
+      "dependencies": ["MOD-00 (DesignSystem)", "MOD-03 (VisionEngine — personDetectedStream)", "MOD-06 (RuleEngine)", "MOD-09 (AIOrchestrator)"],
       "folder_ownership": "Features/LiveOverlay/",
       "can_build_independently": false,
       "can_build_in_parallel": true,
       "merge_risks": "Low — pure UI overlay",
-      "integration_notes": "CameraExperience nhận CoachingOverlay qua ZStack. OverlayViewModel là @Observable inject từ parent."
+      "integration_notes": "CameraExperience nhận CoachingOverlay qua ZStack. OverlayViewModel là @Observable inject từ parent. Subscribe personDetectedStream từ VisionEngine (MOD-03) để ẩn overlay khi không có người trong frame."
     },
 
     {
@@ -355,7 +357,7 @@
       "public_apis": [
         "CoreImageProcessor",
         "func apply(recipe: EditingRecipe, to image: UIImage) async -> UIImage",
-        "struct EditingRecipe { exposure, contrast, highlights, shadows, temperature, vibrance: Float }"
+        "// EditingRecipe định nghĩa trong MOD-15 SharedKernel"
       ],
       "inputs": "UIImage, EditingRecipe",
       "outputs": "UIImage (edited)",
@@ -393,7 +395,7 @@
       "can_build_independently": false,
       "can_build_in_parallel": true,
       "merge_risks": "Low",
-      "integration_notes": "Presented as .sheet from CameraScreen. Cần Photos permission. BeforeAfterView là custom drag-to-compare component."
+      "integration_notes": "Presented as .sheet from CameraScreen. Cần Photos permission — NSPhotoLibraryAddUsageDescription (tiếng Việt) trong Info.plist để lưu ảnh. BeforeAfterView là custom drag-to-compare component."
     },
 
     {
@@ -415,21 +417,53 @@
       ],
       "inputs": "App launch",
       "outputs": "Root view hierarchy",
-      "dependencies": ["MOD-00", "MOD-01", "MOD-02", "MOD-03", "MOD-09"],
+      "dependencies": ["MOD-00", "MOD-01", "MOD-02", "MOD-03", "MOD-09", "MOD-10", "MOD-13", "MOD-15"],
       "folder_ownership": "App/",
       "can_build_independently": false,
       "can_build_in_parallel": false,
       "merge_risks": "High — mọi module đều kết nối ở đây",
-      "integration_notes": "Build cuối cùng sau khi tất cả modules hoàn thành. Chỉ wire up dependencies, không chứa business logic."
+      "integration_notes": "Build cuối cùng sau khi tất cả modules hoàn thành. Chỉ wire up dependencies, không chứa business logic. Khai báo NSCameraUsageDescription + NSPhotoLibraryAddUsageDescription (tiếng Việt) trong Info.plist."
+    },
+
+    {
+      "id": "MOD-15",
+      "name": "SharedKernel",
+      "priority": "Must Have",
+      "owner": "Dev A (tạo sớm nhất cùng bootstrap)",
+      "purpose": "Nguồn sự thật duy nhất cho toàn bộ shared domain models / DTOs dùng chung giữa 3 track — tránh diverge (RISK-03)",
+      "responsibilities": [
+        "Định nghĩa PoseObservation, PoseAnalysisResult",
+        "Định nghĩa SceneContext, Direction, CoachingRule, RuleEngineResult (có framePosition)",
+        "Định nghĩa AICoachingResponse, EditingRecipe",
+        "Chỉ chứa value types thuần (struct/enum) — không có logic, không import framework UI/Infrastructure"
+      ],
+      "public_apis": [
+        "struct PoseObservation",
+        "struct PoseAnalysisResult { chinAngle, shoulderDelta, torsoAngle, framePosition }",
+        "enum SceneContext { indoor, outdoor, unknown }",
+        "enum Direction { up, down, left, right }",
+        "struct CoachingRule { id, message: String, direction: Direction?, priority: Int }",
+        "struct RuleEngineResult { issues: [CoachingRule], readyToCapture: Bool, framePosition: String }",
+        "struct AICoachingResponse { mainCue, secondaryCue, cameraInstruction, editingRecipe: EditingRecipe }",
+        "struct EditingRecipe { exposure, contrast, highlights, shadows, temperature, vibrance: Float }"
+      ],
+      "inputs": "None",
+      "outputs": "Shared value types cho tất cả modules",
+      "dependencies": [],
+      "folder_ownership": "Core/Domain/",
+      "can_build_independently": true,
+      "can_build_in_parallel": true,
+      "merge_risks": "High — mọi module import; phải freeze sớm, không ai được sửa unilaterally",
+      "integration_notes": "Dependency ngầm của TẤT CẢ modules (giống MOD-00). Build & merge ĐẦU TIÊN cùng MOD-00 tại 00:30, sau đó freeze. Mọi thay đổi type sau freeze phải được cả 3 dev đồng ý. Các module khác CHỈ import, không định nghĩa lại các type này (xem RISK-03/RISK-04). Dev B & Dev C phải chốt hình dạng type với Dev A ngay từ phút 0 để tránh SharedKernel sửa tới lui."
     }
   ],
 
   "parallel_workstreams": [
     {
       "stream": "Dev A — Camera Track",
-      "modules": ["MOD-00 (bootstrap)", "MOD-01", "MOD-02", "MOD-11", "MOD-14"],
+      "modules": ["MOD-00 (bootstrap)", "MOD-15 (SharedKernel)", "MOD-01", "MOD-02", "MOD-11", "MOD-14"],
       "timeline": {
-        "00:00-00:30": "Setup Xcode project, MOD-00 DesignSystem tokens",
+        "00:00-00:30": "Setup Xcode project, MOD-00 DesignSystem tokens, MOD-15 SharedKernel — freeze & merge để B/C pull",
         "00:30-01:30": "MOD-01 CameraEngine + MOD-02 CameraExperience (preview running)",
         "01:30-02:30": "MOD-11 PhotoCapture + MOD-14 AppCoordinator skeleton",
         "02:30-03:15": "Integration — wire tất cả modules",
@@ -479,8 +513,8 @@
     { "step": 13, "from": "CaptureService", "to": "ReviewViewModel", "data": "UIImage + AICoachingResponse" },
     { "step": 14, "from": "ReviewViewModel", "to": "CoreImageProcessor", "data": "UIImage + EditingRecipe" },
     { "step": 15, "from": "CoreImageProcessor", "to": "ReviewScreen", "data": "UIImage (edited)" },
-    { "step": 16, "from": "User", "to": "PhotoSaver", "data": "Tap Lưu ảnh" },
-    { "step": 17, "from": "PhotoSaver", "to": "PHPhotoLibrary", "data": "UIImage (edited)" }
+    { "step": 16, "from": "User", "to": "ReviewViewModel", "data": "Tap Lưu ảnh" },
+    { "step": 17, "from": "ReviewViewModel", "to": "PHPhotoLibrary", "data": "UIImage (edited)" }
   ],
 
   "merge_strategy": {
@@ -493,7 +527,7 @@
     ],
     "merge_order": [
       { "order": 1, "module": "MOD-00 DesignSystem", "reason": "Tất cả modules depend on này", "merge_at": "00:30" },
-      { "order": 2, "module": "Shared Domain Models", "reason": "AICoachingResponse, PoseObservation, EditingRecipe, CoachingRule phải thống nhất trước khi code", "merge_at": "00:30" },
+      { "order": 2, "module": "MOD-15 SharedKernel (Core/Domain)", "reason": "AICoachingResponse, PoseObservation, PoseAnalysisResult, SceneContext, CoachingRule, RuleEngineResult, EditingRecipe phải thống nhất trước khi code", "merge_at": "00:30" },
       { "order": 3, "module": "MOD-01 CameraEngine", "reason": "VisionEngine cần sampleBufferStream", "merge_at": "01:00" },
       { "order": 4, "module": "MOD-03 VisionEngine + MOD-06 RuleEngine + MOD-08 OpenAIClient", "reason": "Core processing modules", "merge_at": "01:30" },
       { "order": 5, "module": "Tất cả feature modules", "reason": "Features build on core", "merge_at": "02:30" },
@@ -506,10 +540,10 @@
       { "time": "03:15", "check": "Full demo flow: Camera → Capture → Review → Edit → Save" }
     ],
     "conflict_prevention": [
-      "Shared models (AICoachingResponse.swift, PoseObservation.swift, etc.) được tạo bởi Dev A trong 30 phút đầu — không ai được tạo lại",
-      "Mỗi dev chỉ touch folder của mình: A=CameraEngine+CameraExperience+PhotoCapture, B=VisionEngine+PoseCoaching+SceneAnalysis+RuleEngine, C=AI/*+LiveOverlay+PhotoReview+PhotoEditing",
+      "Shared models sống trong MOD-15 SharedKernel (Core/Domain/) — Dev A tạo & commit toàn bộ trong 30 phút đầu, không ai được định nghĩa lại type ở nơi khác",
+      "Mỗi dev chỉ touch folder của mình: A=CameraEngine+CameraExperience+PhotoCapture+Core/Domain(SharedKernel), B=VisionEngine+PoseCoaching+SceneAnalysis+AI/RuleEngine, C=AI/PromptBuilder+AI/OpenAIClient+AI/AIOrchestrator+LiveOverlay+PhotoReview+PhotoEditing",
       "App/ chỉ Dev A touch khi integration",
-      "Core/DesignSystem/ frozen sau 00:30"
+      "Core/DesignSystem/ và Core/Domain/ frozen sau 00:30"
     ],
     "review_flow": "Không có formal PR review trong hackathon — self-merge sau build success"
   },
@@ -530,7 +564,8 @@
       "MOD-11: PhotoCapture",
       "MOD-12: PhotoEditing",
       "MOD-13: PhotoReview",
-      "MOD-14: AppCoordinator"
+      "MOD-14: AppCoordinator",
+      "MOD-15: SharedKernel (Core/Domain models)"
     ],
     "should_have": [
       "BeforeAfter drag-to-compare interaction (thay vì static side-by-side)",
