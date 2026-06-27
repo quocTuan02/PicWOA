@@ -1,5 +1,5 @@
 import AVFoundation
 
 protocol CameraBufferProvider: AnyObject {
-    var sampleBufferStream: AsyncStream<CMSampleBuffer> { get }
+    nonisolated func makeSampleBufferStream() -> AsyncStream<CMSampleBuffer>
 }
