@@ -286,9 +286,9 @@ MOD-12 (20min) ──► MOD-13 (25min)
 
 ```
 main
-├── feature/dev-a-camera       ← Dev A
-├── feature/dev-b-vision       ← Dev B
-└── feature/dev-c-ai           ← Dev C
+├── feature/camera       ← Dev A
+├── feature/vision       ← Dev B
+└── feature/ai-coaching           ← Dev C
 ```
 
 ### Merge Rules
