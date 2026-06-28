@@ -10,6 +10,7 @@ final class ReviewViewModel {
 
     var editedImage: UIImage?
     var showSaveSuccess: Bool = false
+    var saveError: String?
 
     private let processor = CoreImageProcessor()
 
@@ -30,7 +31,8 @@ final class ReviewViewModel {
             }
             showSaveSuccess = true
         } catch {
-            // TODO: handle save error
+            // Surface the failure (e.g. Photos permission denied) instead of silently dropping it.
+            saveError = "Không thể lưu ảnh. Hãy kiểm tra quyền truy cập Ảnh trong Cài đặt."
         }
     }
 }

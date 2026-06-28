@@ -62,6 +62,17 @@ struct ReviewScreen: View {
             .alert("Đã lưu ảnh!", isPresented: $viewModel.showSaveSuccess) {
                 Button("OK") { dismiss() }
             }
+            .alert(
+                "Lưu ảnh thất bại",
+                isPresented: Binding(
+                    get: { viewModel.saveError != nil },
+                    set: { if !$0 { viewModel.saveError = nil } }
+                )
+            ) {
+                Button("OK", role: .cancel) { viewModel.saveError = nil }
+            } message: {
+                Text(viewModel.saveError ?? "")
+            }
         }
         .task { await viewModel.process() }
     }

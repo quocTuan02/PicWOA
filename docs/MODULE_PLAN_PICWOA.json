@@ -1,6 +1,5 @@
 {
   "app_overview": "Picwoa — AI Photography Coach iOS app. Swift 6, SwiftUI, AVFoundation, Vision, CoreImage, OpenAI. Feature-first architecture, Clean Architecture + MVVM. 3 developers parallel. MVP in 4 hours.",
-
   "modules": [
     {
       "id": "MOD-00",
@@ -30,9 +29,14 @@
       "can_build_independently": true,
       "can_build_in_parallel": true,
       "merge_risks": "Low — pure UI, không có logic",
-      "integration_notes": "Build trước tất cả modules khác. Merge vào main trước giờ 00:30."
+      "integration_notes": "Build trước tất cả modules khác. Merge vào main trước giờ 00:30.",
+      "implementation_status": "completed",
+      "implementation_verified_at": "2026-06-27",
+      "implementation_evidence": [
+        "Core/DesignSystem tokens and base components exist",
+        "xcodebuild succeeded on main"
+      ]
     },
-
     {
       "id": "MOD-01",
       "name": "CameraEngine",
@@ -56,14 +60,22 @@
       ],
       "inputs": "System camera hardware",
       "outputs": "CMSampleBuffer (real-time), UIImage (on capture)",
-      "dependencies": ["AVFoundation", "MOD-00 (DesignSystem — PermissionView)"],
+      "dependencies": [
+        "AVFoundation",
+        "MOD-00 (DesignSystem — PermissionView)"
+      ],
       "folder_ownership": "Core/CameraEngine/",
       "can_build_independently": true,
       "can_build_in_parallel": true,
       "merge_risks": "Medium — shared singleton, cần đảm bảo thread safety",
-      "integration_notes": "VisionEngine VÀ SceneAnalysis mỗi bên gọi makeSampleBufferStream() để có stream riêng (broadcast tới nhiều consumer — KHÔNG dùng chung một AsyncStream vì AsyncStream chỉ phục vụ 1 consumer). CameraExperience consume preview layer. Dùng actor để protect shared state. Cần NSCameraUsageDescription (tiếng Việt) trong Info.plist — thiếu sẽ crash khi xin quyền."
+      "integration_notes": "VisionEngine VÀ SceneAnalysis mỗi bên gọi makeSampleBufferStream() để có stream riêng (broadcast tới nhiều consumer — KHÔNG dùng chung một AsyncStream vì AsyncStream chỉ phục vụ 1 consumer). CameraExperience consume preview layer. Dùng actor để protect shared state. Cần NSCameraUsageDescription (tiếng Việt) trong Info.plist — thiếu sẽ crash khi xin quyền.",
+      "implementation_status": "completed",
+      "implementation_verified_at": "2026-06-27",
+      "implementation_evidence": [
+        "CameraEngine implements AVCaptureSession, multicast makeSampleBufferStream(), capturePhoto()",
+        "xcodebuild succeeded on main"
+      ]
     },
-
     {
       "id": "MOD-02",
       "name": "CameraExperience",
@@ -83,14 +95,23 @@
       ],
       "inputs": "CameraEngine (preview), OverlayViewModel (coaching state)",
       "outputs": "User action: capture trigger, navigation to Review",
-      "dependencies": ["MOD-00", "MOD-01", "MOD-10 (LiveOverlay — for overlay UI)"],
+      "dependencies": [
+        "MOD-00",
+        "MOD-01",
+        "MOD-10 (LiveOverlay — for overlay UI)"
+      ],
       "folder_ownership": "Features/CameraExperience/",
       "can_build_independently": false,
       "can_build_in_parallel": true,
       "merge_risks": "Low — UI layer, conflict chủ yếu ở navigation setup",
-      "integration_notes": "Nhận CoachingOverlay từ MOD-10 dưới dạng ZStack overlay (inject qua protocol/closure để Dev A build với stub khi MOD-10 của Dev C chưa sẵn — tránh bị block). NavigationCoordinator handle push to ReviewScreen."
+      "integration_notes": "Nhận CoachingOverlay từ MOD-10 dưới dạng ZStack overlay (inject qua protocol/closure để Dev A build với stub khi MOD-10 của Dev C chưa sẵn — tránh bị block). NavigationCoordinator handle push to ReviewScreen.",
+      "implementation_status": "completed",
+      "implementation_verified_at": "2026-06-27",
+      "implementation_evidence": [
+        "CameraScreen renders preview, toolbar, permission overlay, coaching overlay slot",
+        "CameraViewModel starts session and handles capture errors"
+      ]
     },
-
     {
       "id": "MOD-03",
       "name": "VisionEngine",
@@ -111,14 +132,22 @@
       ],
       "inputs": "CMSampleBuffer từ CameraEngine.makeSampleBufferStream()",
       "outputs": "PoseObservation (≥15 FPS), Bool personDetected",
-      "dependencies": ["Vision Framework", "MOD-01 (CameraEngine — makeSampleBufferStream())"],
+      "dependencies": [
+        "Vision Framework",
+        "MOD-01 (CameraEngine — makeSampleBufferStream())"
+      ],
       "folder_ownership": "Core/VisionEngine/",
       "can_build_independently": false,
       "can_build_in_parallel": true,
       "merge_risks": "Low — pure processing, không có UI",
-      "integration_notes": "Chạy trên background actor. Output là AsyncStream, các consumer tự subscribe. Cần test trên physical device — Vision không chạy trên simulator."
+      "integration_notes": "Chạy trên background actor. Output là AsyncStream, các consumer tự subscribe. Cần test trên physical device — Vision không chạy trên simulator.",
+      "implementation_status": "completed",
+      "implementation_verified_at": "2026-06-27",
+      "implementation_evidence": [
+        "VisionEngine, PoseDetector, PersonDetector merged from feature/dev-b-vision",
+        "xcodebuild succeeded on main"
+      ]
     },
-
     {
       "id": "MOD-04",
       "name": "PoseCoaching",
@@ -139,14 +168,21 @@
       ],
       "inputs": "PoseObservation từ VisionEngine",
       "outputs": "PoseAnalysisResult",
-      "dependencies": ["MOD-03 (VisionEngine)"],
+      "dependencies": [
+        "MOD-03 (VisionEngine)"
+      ],
       "folder_ownership": "Features/PoseCoaching/",
       "can_build_independently": false,
       "can_build_in_parallel": true,
       "merge_risks": "Low",
-      "integration_notes": "Pure domain logic, không có UI. Unit-testable với mock PoseObservation data."
+      "integration_notes": "Pure domain logic, không có UI. Unit-testable với mock PoseObservation data.",
+      "implementation_status": "completed",
+      "implementation_verified_at": "2026-06-27",
+      "implementation_evidence": [
+        "PoseAnalysisService and PoseAnalysisResult exist and compile",
+        "RuleEngine consumes PoseAnalysisService output"
+      ]
     },
-
     {
       "id": "MOD-05",
       "name": "SceneAnalysis",
@@ -166,14 +202,22 @@
       ],
       "inputs": "CMSampleBuffer từ CameraEngine.makeSampleBufferStream() (stream RIÊNG, không share với VisionEngine)",
       "outputs": "SceneContext",
-      "dependencies": ["MOD-01 (CameraEngine — makeSampleBufferStream())"],
+      "dependencies": [
+        "MOD-01 (CameraEngine — makeSampleBufferStream())"
+      ],
       "folder_ownership": "Features/SceneAnalysis/",
       "can_build_independently": false,
       "can_build_in_parallel": true,
       "merge_risks": "Low",
-      "integration_notes": "Là consumer THỨ HAI của camera frame: gọi CameraEngine.makeSampleBufferStream() để lấy AsyncStream RIÊNG (multicast — KHÔNG dùng chung stream với VisionEngine vì một AsyncStream chỉ phục vụ 1 consumer). Nếu không có CoreML model kịp — default outdoor, không block MVP."
+      "integration_notes": "Là consumer THỨ HAI của camera frame: gọi CameraEngine.makeSampleBufferStream() để lấy AsyncStream RIÊNG (multicast — KHÔNG dùng chung stream với VisionEngine vì một AsyncStream chỉ phục vụ 1 consumer). Nếu không có CoreML model kịp — default outdoor, không block MVP.",
+      "implementation_status": "completed",
+      "implementation_verified_at": "2026-06-27",
+      "implementation_evidence": [
+        "SceneClassifierService exists and compiles",
+        "AppCoordinator uses a second CameraEngine.makeSampleBufferStream() consumer to classify scene every 5 seconds",
+        "AIOrchestrator receives latest SceneContext instead of hardcoded .outdoor"
+      ]
     },
-
     {
       "id": "MOD-06",
       "name": "RuleEngine",
@@ -195,14 +239,22 @@
       ],
       "inputs": "PoseAnalysisResult, SceneContext",
       "outputs": "RuleEngineResult (< 10ms)",
-      "dependencies": ["MOD-04 (PoseCoaching)", "MOD-05 (SceneAnalysis)"],
+      "dependencies": [
+        "MOD-04 (PoseCoaching)",
+        "MOD-05 (SceneAnalysis)"
+      ],
       "folder_ownership": "AI/RuleEngine/",
       "can_build_independently": false,
       "can_build_in_parallel": true,
       "merge_risks": "Low — pure logic, không có side effects",
-      "integration_notes": "Không có network. Unit test toàn bộ rules với mock inputs. Fallback chính khi AI unavailable."
+      "integration_notes": "Không có network. Unit test toàn bộ rules với mock inputs. Fallback chính khi AI unavailable.",
+      "implementation_status": "completed",
+      "implementation_verified_at": "2026-06-27",
+      "implementation_evidence": [
+        "RuleEngine and PoseRules exist and compile",
+        "AIOrchestrator consumes RuleEngineResult"
+      ]
     },
-
     {
       "id": "MOD-07",
       "name": "PromptBuilder",
@@ -221,14 +273,15 @@
       ],
       "inputs": "RuleEngineResult, SceneContext",
       "outputs": "OpenAIRequest",
-      "dependencies": ["MOD-06 (RuleEngine)"],
+      "dependencies": [
+        "MOD-06 (RuleEngine)"
+      ],
       "folder_ownership": "AI/PromptBuilder/",
       "can_build_independently": false,
       "can_build_in_parallel": true,
       "merge_risks": "Low",
       "integration_notes": "Có thể build + unit test hoàn toàn offline với mock data. Prompt template phải enforce tiếng Việt output."
     },
-
     {
       "id": "MOD-08",
       "name": "OpenAIClient",
@@ -249,14 +302,16 @@
       ],
       "inputs": "OpenAIRequest",
       "outputs": "AICoachingResponse",
-      "dependencies": ["URLSession", "Foundation"],
+      "dependencies": [
+        "URLSession",
+        "Foundation"
+      ],
       "folder_ownership": "AI/OpenAIClient/",
       "can_build_independently": true,
       "can_build_in_parallel": true,
       "merge_risks": "Low",
       "integration_notes": "API key trong Config.plist, file này trong .gitignore. MockAIClient return canned response trong 0.3s để simulate latency. ResponseParser map JSON snake_case từ OpenAI (main_cue, secondary_cue, camera_instruction, editing_recipe) → AICoachingResponse (camelCase) theo SPECIFICATION; AICoachingResponse định nghĩa trong MOD-15 SharedKernel."
     },
-
     {
       "id": "MOD-09",
       "name": "AIOrchestrator",
@@ -280,14 +335,17 @@
       ],
       "inputs": "RuleEngineResult stream, SceneContext stream",
       "outputs": "AICoachingResponse stream",
-      "dependencies": ["MOD-06 (RuleEngine)", "MOD-07 (PromptBuilder)", "MOD-08 (OpenAIClient)"],
+      "dependencies": [
+        "MOD-06 (RuleEngine)",
+        "MOD-07 (PromptBuilder)",
+        "MOD-08 (OpenAIClient)"
+      ],
       "folder_ownership": "AI/AIOrchestrator/",
       "can_build_independently": false,
       "can_build_in_parallel": true,
       "merge_risks": "Medium — central coordinator, nhiều upstream dependencies",
       "integration_notes": "Build sau MOD-06, MOD-07, MOD-08. Dùng MockAIClient khi integrate để tránh API calls trong dev."
     },
-
     {
       "id": "MOD-10",
       "name": "LiveOverlay",
@@ -308,14 +366,18 @@
       ],
       "inputs": "AICoachingResponse, RuleEngineResult, PersonDetected bool",
       "outputs": "SwiftUI View injected vào CameraScreen",
-      "dependencies": ["MOD-00 (DesignSystem)", "MOD-03 (VisionEngine — personDetectedStream)", "MOD-06 (RuleEngine)", "MOD-09 (AIOrchestrator)"],
+      "dependencies": [
+        "MOD-00 (DesignSystem)",
+        "MOD-03 (VisionEngine — personDetectedStream)",
+        "MOD-06 (RuleEngine)",
+        "MOD-09 (AIOrchestrator)"
+      ],
       "folder_ownership": "Features/LiveOverlay/",
       "can_build_independently": false,
       "can_build_in_parallel": true,
       "merge_risks": "Low — pure UI overlay",
       "integration_notes": "CameraExperience nhận CoachingOverlay qua ZStack. OverlayViewModel là @Observable inject từ parent. Subscribe personDetectedStream từ VisionEngine (MOD-03) để ẩn overlay khi không có người trong frame."
     },
-
     {
       "id": "MOD-11",
       "name": "PhotoCapture",
@@ -334,14 +396,21 @@
       ],
       "inputs": "User tap event",
       "outputs": "UIImage (full resolution)",
-      "dependencies": ["MOD-01 (CameraEngine)"],
+      "dependencies": [
+        "MOD-01 (CameraEngine)"
+      ],
       "folder_ownership": "Features/PhotoCapture/",
       "can_build_independently": false,
       "can_build_in_parallel": true,
       "merge_risks": "Low",
-      "integration_notes": "Trigger từ CameraViewModel. UIImage + last AICoachingResponse pass cùng nhau sang ReviewViewModel."
+      "integration_notes": "Trigger từ CameraViewModel. UIImage + last AICoachingResponse pass cùng nhau sang ReviewViewModel.",
+      "implementation_status": "completed",
+      "implementation_verified_at": "2026-06-27",
+      "implementation_evidence": [
+        "CaptureService wraps CameraEngine.capturePhoto()",
+        "CameraViewModel.capture() uses CaptureService with isCapturing guard"
+      ]
     },
-
     {
       "id": "MOD-12",
       "name": "PhotoEditing",
@@ -361,14 +430,15 @@
       ],
       "inputs": "UIImage, EditingRecipe",
       "outputs": "UIImage (edited)",
-      "dependencies": ["CoreImage"],
+      "dependencies": [
+        "CoreImage"
+      ],
       "folder_ownership": "Features/PhotoEditing/",
       "can_build_independently": true,
       "can_build_in_parallel": true,
       "merge_risks": "Low — pure image processing",
       "integration_notes": "Không có UI. Unit-testable bằng cách so sánh pixel values. ReviewViewModel gọi sau khi nhận UIImage."
     },
-
     {
       "id": "MOD-13",
       "name": "PhotoReview",
@@ -390,14 +460,18 @@
       ],
       "inputs": "UIImage (original), AICoachingResponse",
       "outputs": "Saved photo in Photos Library, navigation back to Camera",
-      "dependencies": ["MOD-00 (DesignSystem)", "MOD-09 (AIOrchestrator)", "MOD-12 (PhotoEditing)", "PHPhotoLibrary"],
+      "dependencies": [
+        "MOD-00 (DesignSystem)",
+        "MOD-09 (AIOrchestrator)",
+        "MOD-12 (PhotoEditing)",
+        "PHPhotoLibrary"
+      ],
       "folder_ownership": "Features/PhotoReview/",
       "can_build_independently": false,
       "can_build_in_parallel": true,
       "merge_risks": "Low",
       "integration_notes": "Presented as .sheet from CameraScreen. Cần Photos permission — NSPhotoLibraryAddUsageDescription (tiếng Việt) trong Info.plist để lưu ảnh. BeforeAfterView là custom drag-to-compare component."
     },
-
     {
       "id": "MOD-14",
       "name": "AppCoordinator",
@@ -417,14 +491,29 @@
       ],
       "inputs": "App launch",
       "outputs": "Root view hierarchy",
-      "dependencies": ["MOD-00", "MOD-01", "MOD-02", "MOD-03", "MOD-09", "MOD-10", "MOD-13", "MOD-15"],
+      "dependencies": [
+        "MOD-00",
+        "MOD-01",
+        "MOD-02",
+        "MOD-03",
+        "MOD-09",
+        "MOD-10",
+        "MOD-13",
+        "MOD-15"
+      ],
       "folder_ownership": "App/",
       "can_build_independently": false,
       "can_build_in_parallel": false,
       "merge_risks": "High — mọi module đều kết nối ở đây",
-      "integration_notes": "Build cuối cùng sau khi tất cả modules hoàn thành. Chỉ wire up dependencies, không chứa business logic. Khai báo NSCameraUsageDescription + NSPhotoLibraryAddUsageDescription (tiếng Việt) trong Info.plist."
+      "integration_notes": "Build cuối cùng sau khi tất cả modules hoàn thành. Chỉ wire up dependencies, không chứa business logic. Khai báo NSCameraUsageDescription + NSPhotoLibraryAddUsageDescription (tiếng Việt) trong Info.plist.",
+      "implementation_status": "implemented_pending_final_integration",
+      "implementation_verified_at": "2026-06-27",
+      "implementation_evidence": [
+        "AppCoordinator wires CameraEngine -> VisionEngine -> AIOrchestrator -> OverlayViewModel",
+        "AppCoordinator now wires SceneClassifierService into the pose processing pipeline",
+        "Final Dev C review flow still needs integration validation"
+      ]
     },
-
     {
       "id": "MOD-15",
       "name": "SharedKernel",
@@ -454,14 +543,26 @@
       "can_build_independently": true,
       "can_build_in_parallel": true,
       "merge_risks": "High — mọi module import; phải freeze sớm, không ai được sửa unilaterally",
-      "integration_notes": "Dependency ngầm của TẤT CẢ modules (giống MOD-00). Build & merge ĐẦU TIÊN cùng MOD-00 tại 00:30, sau đó freeze. Mọi thay đổi type sau freeze phải được cả 3 dev đồng ý. Các module khác CHỈ import, không định nghĩa lại các type này (xem RISK-03/RISK-04). Dev B & Dev C phải chốt hình dạng type với Dev A ngay từ phút 0 để tránh SharedKernel sửa tới lui."
+      "integration_notes": "Dependency ngầm của TẤT CẢ modules (giống MOD-00). Build & merge ĐẦU TIÊN cùng MOD-00 tại 00:30, sau đó freeze. Mọi thay đổi type sau freeze phải được cả 3 dev đồng ý. Các module khác CHỈ import, không định nghĩa lại các type này (xem RISK-03/RISK-04). Dev B & Dev C phải chốt hình dạng type với Dev A ngay từ phút 0 để tránh SharedKernel sửa tới lui.",
+      "implementation_status": "completed",
+      "implementation_verified_at": "2026-06-27",
+      "implementation_evidence": [
+        "Shared models and protocols exist under Picwoa/Shared",
+        "Dev B merge compiles against shared contracts"
+      ]
     }
   ],
-
   "parallel_workstreams": [
     {
       "stream": "Dev A — Camera Track",
-      "modules": ["MOD-00 (bootstrap)", "MOD-15 (SharedKernel)", "MOD-01", "MOD-02", "MOD-11", "MOD-14"],
+      "modules": [
+        "MOD-00 (bootstrap)",
+        "MOD-15 (SharedKernel)",
+        "MOD-01",
+        "MOD-02",
+        "MOD-11",
+        "MOD-14"
+      ],
       "timeline": {
         "00:00-00:30": "Setup Xcode project, MOD-00 DesignSystem tokens, MOD-15 SharedKernel — freeze & merge để B/C pull",
         "00:30-01:30": "MOD-01 CameraEngine + MOD-02 CameraExperience (preview running)",
@@ -473,7 +574,12 @@
     },
     {
       "stream": "Dev B — Vision Track",
-      "modules": ["MOD-03", "MOD-04", "MOD-05", "MOD-06"],
+      "modules": [
+        "MOD-03",
+        "MOD-04",
+        "MOD-05",
+        "MOD-06"
+      ],
       "timeline": {
         "00:00-00:30": "Branch setup, đọc architecture docs",
         "00:30-01:30": "MOD-03 VisionEngine + MOD-04 PoseCoaching",
@@ -485,7 +591,14 @@
     },
     {
       "stream": "Dev C — AI Track",
-      "modules": ["MOD-07", "MOD-08", "MOD-09", "MOD-10", "MOD-12", "MOD-13"],
+      "modules": [
+        "MOD-07",
+        "MOD-08",
+        "MOD-09",
+        "MOD-10",
+        "MOD-12",
+        "MOD-13"
+      ],
       "timeline": {
         "00:00-00:30": "Branch setup, định nghĩa shared models (AICoachingResponse, EditingRecipe)",
         "00:30-01:30": "MOD-08 OpenAIClient + MOD-07 PromptBuilder + MOD-12 CoreImageProcessor",
@@ -496,48 +609,173 @@
       "deliverable_at_1h30": "MockAIClient trả về canned response, CoreImage áp dụng được recipe"
     }
   ],
-
   "data_flow": [
-    { "step": 1, "from": "Device Camera", "to": "CameraEngine", "data": "CMSampleBuffer @ 30 FPS" },
-    { "step": 2, "from": "CameraEngine", "to": "VisionEngine", "data": "CMSampleBuffer stream" },
-    { "step": 3, "from": "VisionEngine", "to": "PoseCoaching", "data": "PoseObservation @ 15+ FPS" },
-    { "step": 4, "from": "PoseCoaching", "to": "RuleEngine", "data": "PoseAnalysisResult" },
-    { "step": 5, "from": "SceneAnalysis", "to": "RuleEngine", "data": "SceneContext" },
-    { "step": 6, "from": "RuleEngine", "to": "LiveOverlay", "data": "RuleEngineResult (immediate, offline)" },
-    { "step": 7, "from": "RuleEngine", "to": "AIOrchestrator", "data": "RuleEngineResult (throttled)" },
-    { "step": 8, "from": "AIOrchestrator", "to": "PromptBuilder", "data": "issues + scene + framePosition" },
-    { "step": 9, "from": "PromptBuilder", "to": "OpenAIClient", "data": "OpenAIRequest (JSON)" },
-    { "step": 10, "from": "OpenAIClient", "to": "AIOrchestrator", "data": "AICoachingResponse" },
-    { "step": 11, "from": "AIOrchestrator", "to": "LiveOverlay", "data": "AICoachingResponse (override Rule cue)" },
-    { "step": 12, "from": "User", "to": "CaptureService", "data": "Tap capture button" },
-    { "step": 13, "from": "CaptureService", "to": "ReviewViewModel", "data": "UIImage + AICoachingResponse" },
-    { "step": 14, "from": "ReviewViewModel", "to": "CoreImageProcessor", "data": "UIImage + EditingRecipe" },
-    { "step": 15, "from": "CoreImageProcessor", "to": "ReviewScreen", "data": "UIImage (edited)" },
-    { "step": 16, "from": "User", "to": "ReviewViewModel", "data": "Tap Lưu ảnh" },
-    { "step": 17, "from": "ReviewViewModel", "to": "PHPhotoLibrary", "data": "UIImage (edited)" }
+    {
+      "step": 1,
+      "from": "Device Camera",
+      "to": "CameraEngine",
+      "data": "CMSampleBuffer @ 30 FPS"
+    },
+    {
+      "step": 2,
+      "from": "CameraEngine",
+      "to": "VisionEngine",
+      "data": "CMSampleBuffer stream"
+    },
+    {
+      "step": 3,
+      "from": "VisionEngine",
+      "to": "PoseCoaching",
+      "data": "PoseObservation @ 15+ FPS"
+    },
+    {
+      "step": 4,
+      "from": "PoseCoaching",
+      "to": "RuleEngine",
+      "data": "PoseAnalysisResult"
+    },
+    {
+      "step": 5,
+      "from": "SceneAnalysis",
+      "to": "RuleEngine",
+      "data": "SceneContext"
+    },
+    {
+      "step": 6,
+      "from": "RuleEngine",
+      "to": "LiveOverlay",
+      "data": "RuleEngineResult (immediate, offline)"
+    },
+    {
+      "step": 7,
+      "from": "RuleEngine",
+      "to": "AIOrchestrator",
+      "data": "RuleEngineResult (throttled)"
+    },
+    {
+      "step": 8,
+      "from": "AIOrchestrator",
+      "to": "PromptBuilder",
+      "data": "issues + scene + framePosition"
+    },
+    {
+      "step": 9,
+      "from": "PromptBuilder",
+      "to": "OpenAIClient",
+      "data": "OpenAIRequest (JSON)"
+    },
+    {
+      "step": 10,
+      "from": "OpenAIClient",
+      "to": "AIOrchestrator",
+      "data": "AICoachingResponse"
+    },
+    {
+      "step": 11,
+      "from": "AIOrchestrator",
+      "to": "LiveOverlay",
+      "data": "AICoachingResponse (override Rule cue)"
+    },
+    {
+      "step": 12,
+      "from": "User",
+      "to": "CaptureService",
+      "data": "Tap capture button"
+    },
+    {
+      "step": 13,
+      "from": "CaptureService",
+      "to": "ReviewViewModel",
+      "data": "UIImage + AICoachingResponse"
+    },
+    {
+      "step": 14,
+      "from": "ReviewViewModel",
+      "to": "CoreImageProcessor",
+      "data": "UIImage + EditingRecipe"
+    },
+    {
+      "step": 15,
+      "from": "CoreImageProcessor",
+      "to": "ReviewScreen",
+      "data": "UIImage (edited)"
+    },
+    {
+      "step": 16,
+      "from": "User",
+      "to": "ReviewViewModel",
+      "data": "Tap Lưu ảnh"
+    },
+    {
+      "step": 17,
+      "from": "ReviewViewModel",
+      "to": "PHPhotoLibrary",
+      "data": "UIImage (edited)"
+    }
   ],
-
   "merge_strategy": {
     "branch_strategy": "feature branches off main, short-lived (< 2 giờ)",
     "branches": [
       "main",
-      "feature/dev-a-camera",
-      "feature/dev-b-vision",
-      "feature/dev-c-ai"
+      "feature/camera",
+      "feature/vision",
+      "feature/ai-coaching"
     ],
     "merge_order": [
-      { "order": 1, "module": "MOD-00 DesignSystem", "reason": "Tất cả modules depend on này", "merge_at": "00:30" },
-      { "order": 2, "module": "MOD-15 SharedKernel (Core/Domain)", "reason": "AICoachingResponse, PoseObservation, PoseAnalysisResult, SceneContext, CoachingRule, RuleEngineResult, EditingRecipe phải thống nhất trước khi code", "merge_at": "00:30" },
-      { "order": 3, "module": "MOD-01 CameraEngine", "reason": "VisionEngine cần sampleBufferStream", "merge_at": "01:00" },
-      { "order": 4, "module": "MOD-03 VisionEngine + MOD-06 RuleEngine + MOD-08 OpenAIClient", "reason": "Core processing modules", "merge_at": "01:30" },
-      { "order": 5, "module": "Tất cả feature modules", "reason": "Features build on core", "merge_at": "02:30" },
-      { "order": 6, "module": "MOD-14 AppCoordinator", "reason": "Wire everything together", "merge_at": "03:00" }
+      {
+        "order": 1,
+        "module": "MOD-00 DesignSystem",
+        "reason": "Tất cả modules depend on này",
+        "merge_at": "00:30"
+      },
+      {
+        "order": 2,
+        "module": "MOD-15 SharedKernel (Core/Domain)",
+        "reason": "AICoachingResponse, PoseObservation, PoseAnalysisResult, SceneContext, CoachingRule, RuleEngineResult, EditingRecipe phải thống nhất trước khi code",
+        "merge_at": "00:30"
+      },
+      {
+        "order": 3,
+        "module": "MOD-01 CameraEngine",
+        "reason": "VisionEngine cần sampleBufferStream",
+        "merge_at": "01:00"
+      },
+      {
+        "order": 4,
+        "module": "MOD-03 VisionEngine + MOD-06 RuleEngine + MOD-08 OpenAIClient",
+        "reason": "Core processing modules",
+        "merge_at": "01:30"
+      },
+      {
+        "order": 5,
+        "module": "Tất cả feature modules",
+        "reason": "Features build on core",
+        "merge_at": "02:30"
+      },
+      {
+        "order": 6,
+        "module": "MOD-14 AppCoordinator",
+        "reason": "Wire everything together",
+        "merge_at": "03:00"
+      }
     ],
     "integration_checkpoints": [
-      { "time": "00:30", "check": "Project builds, camera permission works, design tokens available" },
-      { "time": "01:30", "check": "Camera preview 30 FPS + PoseObservation stream có data" },
-      { "time": "02:30", "check": "Full pipeline: Camera → Vision → Rule → AI (mock) → Overlay visible" },
-      { "time": "03:15", "check": "Full demo flow: Camera → Capture → Review → Edit → Save" }
+      {
+        "time": "00:30",
+        "check": "Project builds, camera permission works, design tokens available"
+      },
+      {
+        "time": "01:30",
+        "check": "Camera preview 30 FPS + PoseObservation stream có data"
+      },
+      {
+        "time": "02:30",
+        "check": "Full pipeline: Camera → Vision → Rule → AI (mock) → Overlay visible"
+      },
+      {
+        "time": "03:15",
+        "check": "Full demo flow: Camera → Capture → Review → Edit → Save"
+      }
     ],
     "conflict_prevention": [
       "Shared models sống trong MOD-15 SharedKernel (Core/Domain/) — Dev A tạo & commit toàn bộ trong 30 phút đầu, không ai được định nghĩa lại type ở nơi khác",
@@ -547,7 +785,6 @@
     ],
     "review_flow": "Không có formal PR review trong hackathon — self-merge sau build success"
   },
-
   "mvp_scope": {
     "must_have": [
       "MOD-00: DesignSystem",
@@ -581,7 +818,6 @@
       "Photo history"
     ]
   },
-
   "risks": [
     {
       "id": "RISK-01",
@@ -613,5 +849,93 @@
       "impact": "Low",
       "mitigation": "Chạy CoreImageProcessor trên background thread, show loading indicator"
     }
-  ]
+  ],
+  "implementation_tracking": {
+    "updated_at": "2026-06-27",
+    "verified_by": "xcodebuild -project Picwoa.xcodeproj -scheme Picwoa -destination generic/platform=iOS -derivedDataPath ./.derivedData CODE_SIGNING_ALLOWED=NO build succeeded",
+    "dev_a": {
+      "completed_modules": [
+        "MOD-00",
+        "MOD-01",
+        "MOD-02",
+        "MOD-11",
+        "MOD-15"
+      ],
+      "pending_integration_modules": [
+        "MOD-14"
+      ],
+      "notes": "AppCoordinator includes Dev B scene integration; final Dev C review flow still needs validation."
+    },
+    "dev_b": {
+      "completed_modules": [
+        "MOD-03",
+        "MOD-04",
+        "MOD-05",
+        "MOD-06"
+      ],
+      "pending_integration_modules": [],
+      "notes": "SceneAnalysis is wired into AppCoordinator using a sampled latest SceneContext cache."
+    }
+  },
+  "cross_track_integration": {
+    "dev_a_dev_b": {
+      "updated_at": "2026-06-27",
+      "overall_status": "connected",
+      "verification": "xcodebuild -project Picwoa.xcodeproj -scheme Picwoa -destination generic/platform=iOS -derivedDataPath ./.derivedData CODE_SIGNING_ALLOWED=NO build succeeded",
+      "connections": [
+        {
+          "id": "A_B_01_CAMERA_TO_VISION",
+          "from": "MOD-01 CameraEngine (Dev A)",
+          "to": "MOD-03 VisionEngine (Dev B)",
+          "contract": "CameraEngine.makeSampleBufferStream() -> AsyncStream<CMSampleBuffer>; VisionEngine.process(sampleBuffer:)",
+          "status": "connected",
+          "evidence": "AppCoordinator subscribes cameraEngine.makeSampleBufferStream() and forwards buffers to visionEngine.process(sampleBuffer:)."
+        },
+        {
+          "id": "A_B_02_VISION_TO_APP_COORDINATOR",
+          "from": "MOD-03 VisionEngine (Dev B)",
+          "to": "MOD-14 AppCoordinator / MOD-10 Overlay handoff (Dev A integration)",
+          "contract": "VisionEngine.poseStream -> AIOrchestrator.process(pose:scene:); VisionEngine.personDetectedStream -> OverlayViewModel.updatePersonDetected(_:) ",
+          "status": "connected",
+          "evidence": "AppCoordinator consumes poseStream and personDetectedStream."
+        },
+        {
+          "id": "A_B_03_SCENE_ANALYSIS_TO_COORDINATOR",
+          "from": "MOD-05 SceneAnalysis (Dev B)",
+          "to": "MOD-14 AppCoordinator / MOD-09 AIOrchestrator (Dev A integration)",
+          "contract": "SceneClassifierService.classify(_:) -> SceneContext used by AIOrchestrator.process(pose:scene:)",
+          "status": "connected",
+          "evidence": "AppCoordinator classifies camera frames through SceneClassifierService every 5 seconds and passes latest SceneContext into AIOrchestrator.process(pose:scene:)."
+        },
+        {
+          "id": "A_B_04_RULE_ENGINE_USE",
+          "from": "MOD-06 RuleEngine + MOD-04 PoseCoaching (Dev B)",
+          "to": "MOD-09 AIOrchestrator / MOD-14 AppCoordinator integration",
+          "contract": "RuleEngine.evaluate(pose:scene:) -> RuleEngineResult; AIOrchestrator owns RuleEngine and emits coaching fallback before AI throttle.",
+          "status": "connected",
+          "evidence": "AIOrchestrator.process(pose:scene:) calls ruleEngine.evaluate(pose:scene:)."
+        }
+      ],
+      "collision_status": [
+        {
+          "area": "Camera buffer contract",
+          "status": "resolved",
+          "note": "Dev A changed single AsyncStream to makeSampleBufferStream() multicast factory, matching Dev B VisionEngine/SceneAnalysis needs."
+        },
+        {
+          "area": "SceneContext runtime source",
+          "status": "resolved",
+          "note": "SceneAnalysis is connected through AppCoordinator; .outdoor remains only as fallback before first classification."
+        },
+        {
+          "area": "Shared models/protocols",
+          "status": "resolved",
+          "note": "Dev B modules compile against Picwoa/Shared models and protocols; no duplicate shared model files detected in current file tree."
+        }
+      ],
+      "next_actions": [
+        "Test Vision/SceneAnalysis on physical device because Vision and camera buffers are hardware/runtime dependent."
+      ]
+    }
+  }
 }

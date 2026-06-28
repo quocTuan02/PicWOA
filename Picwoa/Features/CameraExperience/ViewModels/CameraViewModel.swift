@@ -8,6 +8,10 @@ final class CameraViewModel {
     var permissionStatus: CameraPermissionStatus = .notDetermined
     var isCapturing: Bool = false
     var errorMessage: String?
+    var zoomFactor: CGFloat = 1.0
+
+    let minZoom: CGFloat = 1.0
+    let maxZoom: CGFloat = CameraEngine.maxZoomFactor
 
     private let cameraEngine: CameraEngine
     private let permissionManager: CameraPermissionManager
@@ -51,6 +55,12 @@ final class CameraViewModel {
             errorMessage = "Không thể chụp ảnh. Vui lòng thử lại."
             return nil
         }
+    }
+
+    func setZoom(_ factor: CGFloat) {
+        let clamped = max(minZoom, min(factor, maxZoom))
+        zoomFactor = clamped
+        cameraEngine.setZoom(clamped)
     }
 
     func openSettings() {

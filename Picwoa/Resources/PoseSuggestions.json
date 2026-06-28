@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "poses": [
+    {
+      "id": "outdoor_lean_shoulder",
+      "displayName": "Nghiêng vai về phía sáng",
+      "imageName": "pose_outdoor_lean_shoulder",
+      "description": "Xoay vai khoảng 30° về phía nguồn sáng, dồn trọng tâm sang chân sau, một tay buông tự nhiên, cằm hơi nâng. Tạo đường vai mềm và tách chủ thể khỏi nền.",
+      "scenes": ["outdoor"],
+      "framing": "vertical_9_16",
+      "framePosition": "center",
+      "bodyCoverage": "half",
+      "tags": ["natural_light", "depth", "leading_lines", "relaxed"]
+    },
+    {
+      "id": "outdoor_walk_left",
+      "displayName": "Bước đi nhìn xa",
+      "imageName": "pose_outdoor_walk_left",
+      "description": "Đặt người về mé trái khung, bước một chân ra trước như đang đi, mắt nhìn ra xa khỏi khung để chừa khoảng trống phía phải. Hợp với đường dẫn và phong cảnh rộng.",
+      "scenes": ["outdoor"],
+      "framing": "vertical_9_16",
+      "framePosition": "left",
+      "bodyCoverage": "full_body",
+      "tags": ["leading_lines", "negative_space", "candid", "wide_scene"]
+    },
+    {
+      "id": "outdoor_sit_relax",
+      "displayName": "Ngồi thư giãn",
+      "imageName": "pose_outdoor_sit_relax",
+      "description": "Ngồi trên bậc hoặc nền thấp, một chân co một chân duỗi, tay chống nhẹ ra sau, lưng thẳng vai mở. Phù hợp công viên, bãi biển, bậc thềm.",
+      "scenes": ["outdoor"],
+      "framing": "horizontal",
+      "framePosition": "right",
+      "bodyCoverage": "full_body",
+      "tags": ["beach", "park", "natural_light", "relaxed"]
+    },
+    {
+      "id": "indoor_hand_pocket",
+      "displayName": "Tay túi gọn gàng",
+      "imageName": "pose_indoor_hand_pocket",
+      "description": "Đứng thẳng, một tay cho vào túi, vai thả lỏng, xoay nhẹ thân để dáng gọn. Tránh dang tay rộng vì nền trong nhà thường hẹp.",
+      "scenes": ["indoor"],
+      "framing": "vertical_9_16",
+      "framePosition": "center",
+      "bodyCoverage": "half",
+      "tags": ["tight_space", "clean", "artificial_light"]
+    },
+    {
+      "id": "indoor_lean_wall",
+      "displayName": "Tựa tường nghiêng người",
+      "imageName": "pose_indoor_lean_wall",
+      "description": "Tựa vai vào tường ở mé khung, bắt chéo chân, tay kia buông tự nhiên, mặt hướng về phía ánh sáng cửa sổ để tránh ngược sáng.",
+      "scenes": ["indoor"],
+      "framing": "vertical_9_16",
+      "framePosition": "left",
+      "bodyCoverage": "full_body",
+      "tags": ["tight_space", "window_light", "relaxed", "clean"]
+    },
+    {
+      "id": "any_portrait_classic",
+      "displayName": "Chân dung cổ điển",
+      "imageName": "pose_any_portrait_classic",
+      "description": "Xoay vai nhẹ khỏi camera, cổ vươn dài, cằm đưa ra trước và hơi hạ xuống, ánh mắt nhìn thẳng ống kính. Dáng an toàn cho mọi bối cảnh.",
+      "scenes": ["any"],
+      "framing": "any",
+      "framePosition": "center",
+      "bodyCoverage": "portrait",
+      "tags": ["safe", "classic", "face_focus"]
+    }
+  ]
+}

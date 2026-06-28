@@ -6,11 +6,31 @@ enum Direction: String, Sendable {
     case forward, backward
 }
 
+/// Deviation level of a pose error — fed into the prompt so the AI can choose the correction intensity.
+enum Magnitude: String, Sendable {
+    case small, medium, large
+}
+
 struct CoachingRule: Identifiable, Sendable {
     let id: String
-    let message: String       // tiếng Việt
+    let message: String       // Vietnamese
     let direction: Direction?
     let priority: Int         // 1 = highest
+    let magnitude: Magnitude
+
+    init(
+        id: String,
+        message: String,
+        direction: Direction?,
+        priority: Int,
+        magnitude: Magnitude = .medium
+    ) {
+        self.id = id
+        self.message = message
+        self.direction = direction
+        self.priority = priority
+        self.magnitude = magnitude
+    }
 }
 
 struct RuleEngineResult: Sendable {

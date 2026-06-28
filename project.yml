@@ -25,15 +25,16 @@ targets:
         excludes:
           - "**/*.md"
           - "**/*.template"
-    resources:
-      - path: Picwoa/Resources/Assets.xcassets
-      - path: Picwoa/Resources/Localizable.strings
+      # Config.plist (gitignored) được tự động bundle khi tồn tại. Nếu máy chưa có file,
+      # xcodegen bỏ qua khi quét và AIConfig fallback sang MockAIClient — build vẫn chạy.
+      - path: Picwoa/Resources/Config.plist
+        optional: true
     info:
       path: Picwoa/Resources/Info.plist
       properties:
         CFBundleDisplayName: Picwoa
         CFBundleName: Picwoa
-        UILaunchStoryboardName: ""
+        UILaunchStoryboardName: LaunchScreen
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
         NSCameraUsageDescription: "Picwoa cần camera để huấn luyện tư thế chụp ảnh cho bạn."
@@ -43,7 +44,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.picwoa.app
         INFOPLIST_FILE: Picwoa/Resources/Info.plist
-        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_APPICON_NAME: ""
         ENABLE_PREVIEWS: YES
     dependencies:
       - sdk: AVFoundation.framework

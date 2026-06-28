@@ -1,0 +1,12 @@
+{
+  "images": [
+    {
+      "filename": "pose_outdoor_lean_shoulder.png",
+      "idiom": "universal"
+    }
+  ],
+  "info": {
+    "author": "xcode",
+    "version": 1
+  }
+}

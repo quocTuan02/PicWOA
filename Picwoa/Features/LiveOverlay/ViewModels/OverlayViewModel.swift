@@ -6,11 +6,12 @@ final class OverlayViewModel {
 
     var currentResponse: AICoachingResponse?
     var personDetected: Bool = false
+    var currentPose: PoseObservation?
 
     private(set) var lastResponse: AICoachingResponse?
 
     var showOverlay: Bool { personDetected && currentResponse != nil }
-    var isReadyToCapture: Bool { currentResponse?.mainCue.contains("Chụp ngay") == true }
+    var isReadyToCapture: Bool { currentResponse?.isReadyToCapture == true }
 
     func update(with response: AICoachingResponse) {
         currentResponse = response
@@ -19,6 +20,13 @@ final class OverlayViewModel {
 
     func updatePersonDetected(_ detected: Bool) {
         personDetected = detected
-        if !detected { currentResponse = nil }
+        if !detected {
+            currentResponse = nil
+            currentPose = nil
+        }
+    }
+
+    func updatePose(_ pose: PoseObservation?) {
+        currentPose = pose
     }
 }
